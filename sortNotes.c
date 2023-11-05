@@ -53,7 +53,6 @@ int attNb;
 treeCons* trees;
 char** output;
 char* txt;
-int headerSize;
 attribute* attributes;
 int error;
 int space;
@@ -401,43 +400,12 @@ int main() {
             trees[i].before[j] = &trees[precRef[i][j]];
         }
     }
-    getline(&line, &len, file);
-    txt = strdup(line);
-    headerSize = strlen(txt);
-    char** values = malloc(lenVal * sizeof(char*));
-    for(int i = 0; i<lenVal; i++) {
-        getline(&line, &len, file);
-        values[i] = strdup(line);
-    }
     fclose(file);
-    if(values[lenVal-1][strlen(values[lenVal-1])-1]=='"') {
-        values[lenVal-1][strlen(values[lenVal-1])-1]='\0';
-        strcat(values[lenVal-1], "\r\n");
-    }
-    output = malloc(lenAgg * sizeof(char*));
-    int txtSize = 0;
-    for(int i = 0; i<lenAgg; i++) {
-        output[i] = strdup(values[linesRef[i][0]]);
-        for(int j = 1; j<linesRefNb[i]; j++) {
-            output[i] = realloc(output[i], strlen(output[i])+strlen(values[linesRef[i][j]]));
-            strcat(output[i], values[linesRef[i][j]]);
-        }
-        txtSize += strlen(output[i]);
-    }
-    free(linesRefNb);
-    for(int i = 0; i<lenAgg; i++) {
-        free(precRef[i]);
-        free(linesRef[i]);
-        free(values[i]);
-    }
-    free(linesRef);
-    free(values);
-    free(precRef);
-    txt = realloc(txt, txtSize + headerSize);
 
     int numCores = sysconf(_SC_NPROCESSORS_ONLN);
     threads = malloc(numCores * sizeof(pthread_t));
     lvl = 0;
+    txt = malloc((1+log10(lenAgg))*lenAgg);
     sortTable(0);
     for(int i = 10; i<numCores; i++) {
         void* arg = (void*)i;
