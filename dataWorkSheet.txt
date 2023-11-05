@@ -1,0 +1,38 @@
+6	8	1
+0
+1,3,2
+2,0
+1
+
+4
+2,0
+
+
+5
+1,0
+0
+
+6
+0,0
+1,2
+
+7
+0,1
+0
+0,0,1,1,0
+8
+0,1
+
+
+names	following	after	before			url
+a		f		d		
+g	c					
+c	a			d		
+end:d						
+f		start:d				
+start:d						
+			g	h		o
+						k
+
+result.txt
+Affichage de result.txt
