@@ -7,14 +7,16 @@
 #include <limits.h>
 #include <pthread.h>
 #include <ctype.h>
-#include <openssl/sha.h>
+#include <openssl/evp.h>
+#include <fcntl.h>
+#include <sys/file.h>
 
 #define MIN(i, j) (((i) < (j)) ? (i) : (j))
 #define MAX(i, j) (((i) > (j)) ? (i) : (j))
 
+#define ABSPATH "/mnt/c/Users/comma/Documents/health/news_underground/mediaSorter/dataApp/"
 #define INPUT "/mnt/c/Users/comma/Documents/health/news_underground/mediaSorter/dataApp/dataWorkSheet.txt"
 #define OUTPUT "/mnt/c/Users/comma/Documents/health/news_underground/mediaSorter/dataApp/sorted.txt"
-#define MEDIA "/mnt/c/Users/comma/Documents/health/news_underground/mediaSorter/dataApp/media.txt"
 
 #define INITIAL_LINE_LENGTH 100
 #define CHUNK_SIZE 256
@@ -57,7 +59,6 @@ attribute* attributes;
 int error;
 int space;
 int loner;
-FILE* file;
 int lvl;
 pthread_rwlock_t checkM = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t fileM = PTHREAD_RWLOCK_INITIALIZER;
@@ -66,6 +67,9 @@ pthread_rwlock_t lonerM = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t errorWM = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t lonerWM = PTHREAD_RWLOCK_INITIALIZER;
 pthread_t *threads;
+int txtSize;
+FILE* file;
+char* sheetName;
 
 
 void freeAll() {
@@ -73,20 +77,31 @@ void freeAll() {
     free(attributes);
     free(txt);
     for(int i = 0; i<lenAgg; i++) {
-        free(output[i]);
         free(trees[i].attrP);
         free(trees[i].before);
     }
-    free(output);
     free(trees);
+    exit(0);
 }
 
-// Function to generate a SHA-256 hash of a string
-void sha256(const char *str, unsigned char hash[SHA256_DIGEST_LENGTH]) {
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
-    SHA256_Update(&sha256, str, strlen(str));
-    SHA256_Final(hash, &sha256);
+void sha256(const char *str, unsigned char hash[EVP_MAX_MD_SIZE]) {
+    EVP_MD_CTX *mdctx;
+    const EVP_MD *md;
+    unsigned char md_value[EVP_MAX_MD_SIZE];
+    unsigned int md_len, i;
+
+    OpenSSL_add_all_digests();
+
+    md = EVP_get_digestbyname("sha256");
+
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, md, NULL);
+    EVP_DigestUpdate(mdctx, str, strlen(str));
+    EVP_DigestFinal_ex(mdctx, md_value, &md_len);
+    EVP_MD_CTX_free(mdctx);
+
+    for(i = 0; i < md_len; i++)
+        sprintf(&hash[i*2], "%02x", md_value[i]);
 }
 
 void* sortTable(void* id) {
@@ -258,23 +273,23 @@ void* sortTable(void* id) {
             if(back) {
                 pthread_rwlock_rdlock(&fileM);
                 pthread_rwlock_unlock(&checkM);
-                txt[headerSize] = '\0';
+                txt[0] = '\0';
                 for(int j = 1; j<lenAggP; j++) {
-                    strcat(txt, output[res[j]]);
+                    sprintf(txt, "%s%d,", txt, res[j]);
                 }
                 file = fopen(OUTPUT, "w");
                 if (file == NULL) {
                     printf("Failed to open the output file.\n");
-                    break;
+                    freeAll();
                 }
-                fprintf(file, txt);
-                fclose(file);
-                file = fopen(MEDIA, "w");
-                if (file == NULL) {
-                    printf("Failed to open the media file.\n");
-                    break;
+                int fileNo = fileno(file);
+                if (flock(fileNo, LOCK_EX) == -1) {
+                    perror("Failed to obtain lock");
+                    freeAll();
                 }
-                fprintf(file, txt);
+                txt[strlen(txt)-1] = '\0';
+                fprintf(file, "%s", txt);
+                flock(fileNo, LOCK_UN);
                 fclose(file);
                 pthread_rwlock_unlock(&fileM);
             } else{
@@ -288,23 +303,28 @@ void* sortTable(void* id) {
     free(spaces);
     free(loners);
     free(errori);
-    free(y);
     free(attributesI);
 }
-
-int main() {
+int main(int argc, char *argv[]) {
+    sheetName = argv[1];
 
     error = INT_MAX;
     space = 0;
     loner = INT_MAX;
-
     file = fopen(INPUT, "r");
     if (file == NULL) {
         printf("Failed to open the file.\n");
         lenAgg = 0;
         freeAll();
-        return -1;
     }
+    int filNo = fileno(file);
+    if (flock(filNo, LOCK_EX) == -1) {
+        perror("Failed to obtain lock");
+        lenAgg = 0;
+        freeAll();
+    }
+    
+    
     char* line;
     size_t len = 0;
     getline(&line, &len, file);
@@ -315,7 +335,7 @@ int main() {
     lenAgg = atoi(token);
     token = strtok(NULL, "\t");
     int lenVal = atoi(token);
-    token = strtok(NULL, "\r");
+    token = strtok(NULL, "\t");
     attNb = atoi(token);
     getline(&line, &len, file);
     attributes = malloc(attNb * sizeof(attribute));
@@ -326,27 +346,11 @@ int main() {
     }
     int count;
     trees = malloc(lenAgg * sizeof(treeCons));
-    int** linesRef = malloc(lenAgg * sizeof(int*));
     int** precRef = malloc(lenAgg * sizeof(int*));
     int mediaNb = 0;
-    int* linesRefNb = malloc(lenAgg * sizeof(int*));
     for(int i = 0; i<lenAgg; i++) {
-        getline(&line, &len, file);
-        if(line[0] == '\r') {
-            break;
-        }
-
-        linesRef[i] = malloc(lenVal * sizeof(int));
-        token = strtok(line, ",");
-        count = 0;
-        while(token!=NULL && token[0] != '\r') {
-            linesRef[i][count] = atoi(token)-1;
-            token = strtok(NULL, ",");
-            count++;
-        }
-        linesRefNb[i] = count;
         trees[i].id = i;
-
+        getline(&line, &len, file);
         getline(&line, &len, file);
         token = strtok(line, ",");
         trees[i].afters = atoi(token);
@@ -381,6 +385,18 @@ int main() {
         trees[i].attrPSize = count;
         trees[i].attrP = realloc(trees[i].attrP, count * sizeof(attrProp));
     }
+    flock(filNo, LOCK_UN);
+    fclose(file);
+    for(int i = 0; i<lenAgg; i++) {
+        trees[i].before = malloc(trees[i].befSize * sizeof(treeCons*));
+        for(int j = 0; j<trees[i].befSize; j++) {
+            trees[i].before[j] = &trees[precRef[i][j]];
+        }
+    }
+    for(int i = 0; i<lenAgg; i++) {
+        free(precRef[i]);
+    }
+    free(precRef);
     for(int i = 0; i<attNb; i++) {
         if(attributes[i].dist <= 0) {
             attributes[i].last = -2;
@@ -394,35 +410,26 @@ int main() {
         attributes[i].prevLast = attributes[i].last;
         attributes[i].prevRest = attributes[i].rest;
     }
-    for(int i = 0; i<lenAgg; i++) {
-        trees[i].before = malloc(trees[i].befSize * sizeof(treeCons*));
-        for(int j = 0; j<trees[i].befSize; j++) {
-            trees[i].before[j] = &trees[precRef[i][j]];
-        }
-    }
-    fclose(file);
 
     int numCores = sysconf(_SC_NPROCESSORS_ONLN);
     threads = malloc(numCores * sizeof(pthread_t));
     lvl = 0;
-    txt = malloc((1+log10(lenAgg))*lenAgg);
+    //txtSize = lenAgg * (2+log10(lenAgg));
+    txtSize = 1000;
+    txt = malloc(txtSize*lenAgg);
     sortTable(0);
     for(int i = 10; i<numCores; i++) {
         void* arg = (void*)i;
         if(pthread_create(&threads[i], NULL, sortTable,arg)!=0) {
             fprintf(stderr, "Error creating thread %d.\n", i);
             freeAll();
-            return -1;
         }
     }
     for(int i = 10; i<numCores; i++) {
         if (pthread_join(threads[i], NULL) != 0) {
             perror("pthread_join");
             freeAll();
-            return -1;
         }
     }
     freeAll();
-
-    return 0;
 }
