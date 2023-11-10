@@ -11,12 +11,10 @@
 #include <fcntl.h>
 #include <sys/file.h>
 
+#include <dirent.h>
+
 #define MIN(i, j) (((i) < (j)) ? (i) : (j))
 #define MAX(i, j) (((i) > (j)) ? (i) : (j))
-
-#define ABSPATH "/mnt/c/Users/comma/Documents/health/news_underground/mediaSorter/dataApp/"
-#define INPUT "/mnt/c/Users/comma/Documents/health/news_underground/mediaSorter/dataApp/dataWorkSheet.txt"
-#define OUTPUT "/mnt/c/Users/comma/Documents/health/news_underground/mediaSorter/dataApp/sorted.txt"
 
 #define INITIAL_LINE_LENGTH 100
 #define CHUNK_SIZE 256
@@ -52,10 +50,10 @@ typedef struct {
 
 int lenAgg;
 int attNb;
-treeCons* trees;
-char** output;
-char* txt;
-attribute* attributes;
+treeCons* trees = NULL;
+char** output = NULL;
+char* txt = NULL;
+attribute* attributes = NULL;
 int error;
 int space;
 int loner;
@@ -66,10 +64,10 @@ pthread_rwlock_t errorM = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t lonerM = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t errorWM = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t lonerWM = PTHREAD_RWLOCK_INITIALIZER;
-pthread_t *threads;
+pthread_t *threads = NULL;
 int txtSize;
 FILE* file;
-char* sheetName;
+char* filePATH = NULL;
 
 
 void freeAll() {
@@ -105,6 +103,7 @@ void sha256(const char *str, unsigned char hash[EVP_MAX_MD_SIZE]) {
 }
 
 void* sortTable(void* id) {
+    intptr_t threadId = (intptr_t)id;
     int lenAggP = lenAgg+1;
     int* res = malloc(lenAggP * sizeof(int));
     int* spaces = malloc((lenAggP) * sizeof(int));
@@ -125,7 +124,6 @@ void* sortTable(void* id) {
     int n;  // nth medium
     int c;
     bool loop = true;
-    int threadId = (int)id;
     int back = 0;
     treeCons* po;
     bool compar = false;
@@ -277,7 +275,7 @@ void* sortTable(void* id) {
                 for(int j = 1; j<lenAggP; j++) {
                     sprintf(txt, "%s%d,", txt, res[j]);
                 }
-                file = fopen(OUTPUT, "w");
+                file = fopen(filePATH, "w");
                 if (file == NULL) {
                     printf("Failed to open the output file.\n");
                     freeAll();
@@ -306,14 +304,16 @@ void* sortTable(void* id) {
     free(attributesI);
 }
 int main(int argc, char *argv[]) {
-    sheetName = argv[1];
 
     error = INT_MAX;
     space = 0;
     loner = INT_MAX;
-    file = fopen(INPUT, "r");
+    filePATH = malloc(strlen(argv[1]) + 10);
+    sprintf(filePATH, "data/%s.txt", argv[1]);
+
+    file = fopen(filePATH, "r");
     if (file == NULL) {
-        printf("Failed to open the file.\n");
+        printf("Failed to open the file %s\n", filePATH);
         lenAgg = 0;
         freeAll();
     }
@@ -332,6 +332,7 @@ int main(int argc, char *argv[]) {
         line++;
     }
     char* token = strtok(line, "\t");
+    token = strtok(NULL, "\t");
     lenAgg = atoi(token);
     token = strtok(NULL, "\t");
     int lenVal = atoi(token);
@@ -416,11 +417,13 @@ int main(int argc, char *argv[]) {
     lvl = 0;
     //txtSize = lenAgg * (2+log10(lenAgg));
     txtSize = 1000;
+    filePATH = realloc(filePATH, strlen(filePATH) + 7);
+    sprintf(filePATH, "data/%s_sorted.txt", argv[1]);
     txt = malloc(txtSize*lenAgg);
     sortTable(0);
     for(int i = 10; i<numCores; i++) {
-        void* arg = (void*)i;
-        if(pthread_create(&threads[i], NULL, sortTable,arg)!=0) {
+        intptr_t arg = (intptr_t)i;
+        if(pthread_create(&threads[i], NULL, sortTable, (void*)arg)!=0) {
             fprintf(stderr, "Error creating thread %d.\n", i);
             freeAll();
         }
