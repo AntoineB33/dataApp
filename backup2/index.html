@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Player App</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+        }
+        body {
+            display: flex;
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+        }
+        video, img {
+            position: absolute;
+            /* width: 100%;
+            height: 100%; */
+            max-width: 100%; /* Maximum width as a percentage of its container */
+            max-height: 100%;
+        }
+        video {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <video id="videoBg" autoplay>
+        <!-- <source src="../../videos/view.mp4" type="video/mp4"> -->
+        <source id="placeholderBg" src="" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <img id="image" src="">
+    <video id="video" autoplay>
+        <!-- <source src="../../videos/view.mp4" type="video/mp4"> -->
+        <source id="placeholder" src="" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <script>
+        // Use the preload script to access IPC and send/receive messages
+        const { ipcRenderer } = require('electron');
+        const VOL_SPEED = 3;
+        const MEDIA_DATA_PATH = "mediaData";
+        const DEF_BG_NAME = "b";
+        const DEF_BG_REAL_NAME = "black_default_background.jpg";
+        const extensionList = [".jpg",".jpeg",".png",".gif",".mp4"];
+        const extensionsToCheck = [
+        { directory: "videos\\", extension: ".mp4" },
+        { directory: "images\\", extension: ".jpeg" },
+        { directory: "images\\", extension: ".jpg" },
+        { directory: "images\\", extension: ".png" },
+        { directory: "images\\", extension: ".gif" }
+        ];
+
+        const mediaDataPath = MEDIA_DATA_PATH + "/";
+        const { remote } = require('electron');
+        const fs = require('fs');
+        const placeholder = document.getElementById('placeholder');
+        const video = document.getElementById('video');
+        const image = document.getElementById('image');
+        const placeholderBg = document.getElementById('placeholderBg');
+        const videoBg = document.getElementById('videoBg');
+
+        let backgrounds = [[0,DEF_BG_REAL_NAME]];
+        let mediaList = [];
+        let currentMediaInd = -1;
+        let videoPlaying = false;
+        let isPaused = true;
+
+
+        // Function to load and play the next video
+        function loadNextVideo(step) {
+            const currentMediaIndI = Math.max(0,Math.min(currentMediaInd + step,mediaList.length-1));
+            if (currentMediaInd != currentMediaIndI) {
+                currentMediaInd = currentMediaIndI;
+                console.log(currentMediaInd);
+                console.log(mediaList[currentMediaInd]);
+                if(mediaList[currentMediaInd].slice(-4)==".mp4") {
+                    placeholder.src = "../../videos/" + mediaList[currentMediaInd];
+                    video.load();
+                    video.play();
+                    if(!videoPlaying) {
+                        video.style.display = 'block';
+                        videoPlaying = true;
+                    } else {
+                        image.style.display = 'none';
+                    }
+                } else {
+                    image.src = "../../images/" + mediaList[currentMediaInd];
+                    if(videoPlaying) {
+                        video.pause();
+                        video.style.display = 'none';
+                        image.style.display = 'block';
+                        videoPlaying = false;
+                    }
+                }
+            }
+        }
+
+        console.log(process.argv);
+        
+        mediaList.push('../../'+process.argv[2]);
+        loadNextVideo(1);
+        
+        // Read the list of video file paths from the text file
+        /*fs.readFile('../data/tr.txt', 'utf8', (err, data) => {
+            if (err) {
+                console.error('Error reading video_list.txt:', err);
+                return;
+            }
+            // Split the file content by newline to get individual lines
+            let lines = data.split('\n');
+
+            let line = lines[0].split('\t');
+            for (let i = 4; i < line.length; i++) {
+                if (line[i] === 'url') {
+                    urlInd = i;
+                    break; // Exit the loop when 'url' is found
+                }
+            }
+
+            // Extract video paths after the 6th tab character in each line
+            for(let i = 1; i<lines.length; i++) {
+                const line = lines[i];
+                const tabSeparatedValues = line.split('\t');
+                if (tabSeparatedValues.length > urlInd) {
+                    let url = tabSeparatedValues[urlInd].trim();
+                    if (url) {
+                        console.log(url);
+                        if (url.startsWith('https://') && (url.charAt(8) === 'e' || url.charAt(8) === 'w')) {
+                            if (url.charAt(8) === 'e') {
+                                const videoName = url.split('videos/').pop().split('?')[0] + '.mp4';
+                                url = 'https_e_' + videoName;
+                            } else if (url.charAt(8) === 'w') {
+                                const videoID = url.split('&')[0].split('?v=').pop() + '.mp4';
+                                url = 'https_y_' + videoID;
+                            }
+                        }
+                        if(!extensionList.includes(url.slice(-4))) {
+
+                            let found = false;
+
+                            for (const { directory, extension } of extensionsToCheck) {
+                                const filePath = `../../${directory}${url}${extension}`;
+
+                                if (fs.existsSync(filePath)) {
+                                    url += extension;
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!found) {
+                                throw new Error("Wrong extension: " + name);
+                            }
+                        }
+                        if (tabSeparatedValues[4] === "-") {
+                            if (url === DEF_BG_NAME) {
+                                url = DEF_BG_REAL_NAME;
+                            }
+                            
+                            if (backgrounds.length > 0 && backgrounds[backgrounds.length - 1][0] === mediaList.length) {
+                                backgrounds[backgrounds.length - 1][1] = url;
+                            } else {
+                                backgrounds.push([mediaList.length, url]);
+                            }
+                        } else {
+                            mediaList.push(url);
+                        }
+                    }
+                }
+            }
+            loadNextVideo(1);
+        });*/
+
+        document.addEventListener('keydown', (event) => {
+            const ctrlKey = event.ctrlKey;
+            if(ctrlKey || !videoPlaying) {
+                if (event.key === 'ArrowRight') {
+                    loadNextVideo(1);
+                } else if (event.key === 'ArrowLeft') {
+                    loadNextVideo(-1);
+                }
+            } else {
+                if (event.key === 'ArrowRight') {
+                    video.currentTime += 10;
+                } else if (event.key === 'ArrowLeft') {
+                    video.currentTime -= 10;
+                }
+            }
+            if (event.key === " ") {
+                if (isPaused) {
+                    // If video is paused, play it
+                    video.play();
+                } else {
+                    // If video is playing, pause it
+                    video.pause();
+                }
+                isPaused = !isPaused; // Toggle the play/pause state
+            } else if (/^[1-9]$/.test(event.key)) {
+                // Calculate the time offset based on the numerical key pressed
+                const numericValue = parseInt(event.key, 10);
+                const videoDuration = video.duration || 1; // Avoid division by zero
+                const timeOffset = (numericValue / 10) * videoDuration;
+
+                // Set the video's currentTime to the calculated time offset
+                video.currentTime = timeOffset;
+            }
+        });
+    </script>
+</body>
+</html>
