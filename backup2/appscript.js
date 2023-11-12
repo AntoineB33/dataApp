@@ -49,14 +49,17 @@ function onEdit(e) {
     } else if(colNumb == stat) {
       stat++;
     }
-    range = sheet.getRange(1,1,Math.max(2,values.length),stat);
+    range = sheet.getRange(1,1,Math.max(3,values.length),stat);
     values = range.getValues();
   }
   if(colNumb == 0) {
     colNumb = Math.max(6, stat-1);
   }
   nbLineBef = values.length;
-  var range2 = sheet.getRange(1,1,Math.max(nbLineBef,prevLine+1),colNumb+1);
+  if(isNaN(prevLine)) {
+    prevLine = 1;
+  }
+  var range2 = sheet.getRange(1,1,Math.max(nbLineBef,prevLine)+1,colNumb+1);
   range2.clearDataValidations();
   var headLine = ["names", "following", "after", "before", ""];
   for(var i = 0; i<4; i++) {
@@ -86,7 +89,7 @@ function onEdit(e) {
     nbLineBef--;
   }
   values.splice(nbLineBef,values.length-nbLineBef);
-  perNot = ["start:","end:"];
+  perNot = ["","start:","end:"];
   periods = [];
   perRef = [0];
   data = [0];
@@ -101,7 +104,7 @@ function onEdit(e) {
     }
     data.push([true, [], [], -1]);
     for(var k = 0; k<values[i][0].length; k++) {
-      stat = -1;
+      stat = 0;
       isTip(i,0,k);
       //check if already before
       for(var r0 = 1; r0<=i; r0++) {
@@ -112,39 +115,33 @@ function onEdit(e) {
         }
         for(var f = 0; f<values[r][0].length; f++) {
           if(r==i && f>=k || !searching(r,0,f)) {continue;}
-          if(i==r || stat<0 && (perRef[r]<0 || perRef[i]>-1 && (perRef[i]!=perRef[r] || periods[perRef[r]][2]!=i) ||
-                perRef[i]<0 && periods[perRef[r]][2]>-1 || stat2<0) ||
-              stat>-1 && (perRef[i]>-1 && perRef[r]>-1 && perRef[i]!=perRef[r] && periods[perRef[r]][stat]>-1 ||
-                perRef[i]<0 && perRef[r]>-1 && (periods[perRef[r]][stat]>-1 || stat2<0))) {
+          if(i==r || stat==0 && (perRef[r]<0 || perRef[i]>-1 && (perRef[i]!=perRef[r] || periods[perRef[r]][0]!=i) ||
+                perRef[i]<0 && periods[perRef[r]][0]>-1 || stat2==0) ||
+              stat>0 && (perRef[i]>-1 && perRef[r]>-1 && perRef[i]!=perRef[r] && periods[perRef[r]][stat]>-1 ||
+                perRef[i]<0 && perRef[r]>-1 && (periods[perRef[r]][stat]>-1 || stat2==0))) {
             elem = values[r][0][f];
             putSugg(i,k);
             return -1;
           }
-          if(stat < 0) {
-            periods[perRef[r]][2] = i;
+          if(stat == 0) {
             elem = elem2;
           } else {
-            if(perRef[r] < 0) {
-              perRef[r] = periods.length;
-              periods.push([-1,-1,r,[elem]]);
-            }
-            periods[perRef[r]][stat] = i;
+            addPerCond(r);
             for(var c = 0; c<values[i][0].length; c++) {
-              if(values[i][0][c].startsWith(perNot[stat]))
-              if(!periods[perRef[r]][3].some(function(e) {return e.toLowerCase()==val;})) {
+              if(values[i][0][c].startsWith(perNot[stat]) && !periods[perRef[r]][3].some((e) => e.toLowerCase()==val)) {
                 periods[perRef[r]][3].push(elem);
               }
             }
-            elem = perNot[stat]+elem2;
           }
-          values[i][0][k] = elem;
+          values[i][0][k] = perNot[stat]+elem2;
           perRef[i] = perRef[r];
           stop = true;
         }
       }
-      if(!stop && stat>-1) {
-        perRef[i] = periods.length;
-        periods.push([-1,-1,-1,[elem]]);
+      if(stat) {
+        if(!stop) {
+          addPer(i);
+        }
         periods[perRef[i]][stat] = i;
       }
       stop = false;
@@ -231,7 +228,6 @@ function onEdit(e) {
     acc += attNames[j-4].length;
   }
   updatePer();
-  var ind;
   for(var i = 1; i<nbLineBef; i++) {
     if(perRef[i]!=-1 && values[i][colNumb-1].length!=0) {
       suggSet(i,colNumb-1,[]);
@@ -239,18 +235,15 @@ function onEdit(e) {
     }
     for(var j = 0; j<perInt[i].length; j++) {
       if(data[i]==0) {
-        data[periods[perRef[i]][0]][1].push(periods[perInt[i][j]][0]);
-        data[periods[perInt[i][j]][1]][1].push(periods[perRef[i]][1]);
+        data[periods[perRef[i]][1]][1].push(periods[perInt[i][j]][1]);
+        data[periods[perInt[i][j]][2]][1].push(periods[perRef[i]][2]);
       } else {
-        data[i][1].push(periods[perInt[i][j]][0]);
-        data[periods[perInt[i][j]][1]][1].push(i);
+        data[i][1].push(periods[perInt[i][j]][1]);
+        data[periods[perInt[i][j]][2]][1].push(i);
       }
     }
   }
-  for(var i = 1; i<values.length; i++) {
-    if(data[i]===0) {
-      continue;
-    }
+  for(var i = 1; i<nbLineBef; i++) {
     for(var j = 1; j<4; j++) {
       for(var k = 0; k<values[i][j].length; k++) {
         isTip(i,j,k);
@@ -258,7 +251,7 @@ function onEdit(e) {
           for(var f = 0; f<values[r][0].length; f++) {
             if(searching(r,0,f)) {
               if(perRef[r]>-1 && !val.startsWith(perNot[0]) && !val.startsWith(perNot[1])) {
-                r = periods[perRef[r]][0];
+                r = periods[perRef[r]][1];
               }
               stop = true;
               break;
@@ -288,37 +281,49 @@ function onEdit(e) {
           return -1;
         }
         stop = false;
-        if(stat!=-1 || perRef[r]>-1) {
+        if(stat>0) {
           found(r,i,j,k);
-          r = -perRef[r];
+          updatePer();
         }
-        perIntCont[i][j-1].push(r);
+        perIntCont[i][j-1].push([r,stat]);
       }
     }
   }
-  updatePer();
   for(var i = 1; i<nbLineBef; i++) {
     for(var j = 0; j<3; j++) {
       for(var k = 0; k<perIntCont[i][j].length; k++) {
-        r = perIntCont[i][j][k];
-        var re = r;
-        if(r<0) {
-          r = periods[-r];
-          re = r[1];
-          r = r[0]
+        var u = perIntCont[i][j][k];
+        r = u[0];
+        var e = r;
+        var is = i;
+        var ie = i;
+        if(data[i]==0) {
+          is = periods[perRef[i]];
+          ie = is[2];
+          is = is[1];
+        }
+        if(data[r]==0) {
+          r = periods[perRef[r]];
+          e = r[2];
+          r = r[1];
+        }
+        if(u[1]==1) {
+          e = r;
+        } else if(u[1]==2) {
+          r = e;
         }
         if(j==0) {
-          if(!data[i][0]) {
-            values[i][1].splice(1, values[i][1].length-1);
-            sugg(i,1);
+          if(!data[is][0]) {
+            values[is][1].splice(1, values[is][1].length-1);
+            sugg(is,1);
             return -1;
           }
-          data[re][3] = i;
-          data[i][0] = false;
+          data[e][3] = is;
+          data[is][0] = false;
         } else if(j==1) {
-          data[i][1].push(re);
+          data[is][1].push(e);
         } else {
-          data[r][1].push(i);
+          data[r][1].push(ie);
         }
       }
     }
@@ -396,10 +401,18 @@ function onEdit(e) {
     var j = i;
     var allLines = "";
     while(j!==i) {
-      allLines += " >> "+values[j][0][0]+"("+(j+1)+")";
+      var index = j+1;
+      if(j>=nbLineBef) {
+        index = "out";
+      }
+      allLines += " >> "+values[j][0][0]+"("+index+")";
       j = data[j][3];
     }
-    allLines += " >> "+values[j][0][0]+"("+(j+1)+")";
+    var index = j+1;
+    if(j>=nbLineBef) {
+      index = "out";
+    }
+    allLines += " >> "+values[j][0][0]+"("+index+")";
     inconsist(allLines.slice(4));
     return -1;
   }
@@ -422,10 +435,18 @@ function onEdit(e) {
                 var allLines = "";
                 for(var v = k; v<ind+1; v++) {
                   var vi = dataAgg[i].lines[v];
-                  allLines += " >> "+values[vi][0][0]+"("+(vi+1)+")";
+                  var index = vi+1;
+                  if(vi>=nbLineBef) {
+                    index = "out";
+                  }
+                  allLines += " >> "+values[vi][0][0]+"("+index+")";
                 }
                 var vi = dataAgg[i].lines[k];
-                inconsist(allLines.slice(4)+" > "+values[vi][0][0]+"("+(vi+1)+")");
+                var index = vi+1;
+                if(vi>=nbLineBef) {
+                  index = "out";
+                }
+                inconsist(allLines.slice(4)+" > "+values[vi][0][0]+"("+index+")");
                 return -1;
               }
             } else {
@@ -448,6 +469,15 @@ function onEdit(e) {
         var back = 0;
         var hasUnvisitedNeighbor = 0;
         const current = stack[stack.length - 1];
+        if(path.includes(74) && path.includes(75)) {
+          console.log("hey");
+        }
+        if(path.includes(74)) {
+          console.log("hey");
+        }
+        if(path.includes(75)) {
+          console.log("hey");
+        }
         if(path.length!=0 && path[path.length-1]==current) {
           back = 1;
         } else {
@@ -456,17 +486,21 @@ function onEdit(e) {
 
           const neighbors = dataAgg[current].before;
 
-          let isInSteps = 0;
-
           for (const neighbor of neighbors) {
-            if (path.includes(neighbor)) {
+            var taken = path.indexOf(neighbor);
+            if (taken!=-1) {
               var allLines = "";
-              path.push(path[0]);
+              path.push(neighbor);
+              path.splice(0,taken);
               for(const i of path) {
                 var sub = "";
                 for(var j = 0; j<dataAgg[i].lines.length; j++) {
                   var x = dataAgg[i].lines[j];
-                  sub += ","+values[x][0][0]+"("+(x+1)+")";
+                  var index = x+1;
+                  if(x>=nbLineBef) {
+                    index = "out";
+                  }
+                  sub += ","+values[x][0][0]+"("+index+")";
                 }
                 allLines = sub.slice(1) + " > "+allLines;
               }
@@ -480,13 +514,12 @@ function onEdit(e) {
               if(place[neighbor][1]<stack.length && stack[place[neighbor][1]] == neighbor) {
                 stack.splice(place[neighbor][1],1);
               }
-              isInSteps = 1;
             } else {
               steps[neighbor] = 1;
             }
             place[neighbor] = [current, stack.length];
 
-            if (!isInSteps && !visited[neighbor]) {
+            if (!visited[neighbor]) {
               stack.push(neighbor);
               hasUnvisitedNeighbor = 1;
             }
@@ -560,24 +593,37 @@ function onEdit(e) {
   exitAllways();
 }
 
-function found(r,i,j,k) {
-  if(perRef[r] < 0) {
-    perRef[r] = periods.length;
-    periods.push([-1,-1,r,values[r][0]]);
-    if(stat2!=-1) {
-      periods[periods.length-1][3] = periods[periods.length-1][3].filter(
-        (e)=>e.startsWith(perNot[stat2])).map(
-          (e)=>e.slice(perNot[stat2].length));
-    }
+function addPer(r) {
+  perRef[r] = periods.length;
+  periods.push([r,-1,-1,[]]);
+}
+
+function addPerCond(r,i,j,k) {
+  if(perRef[r] == -1) {
+    values[i][j].splice(k,1);
+    sugg(i,j);
   }
-  values[i][j][k] = elem2;
+  let b = perRef[r] == -2;
+  if(b) {
+    addPer(r);
+  }
+  return b;
+}
+
+function found(r,i,j,k) {
+  if(addPerCond(r,i,j,k) && stat2==0) {
+    periods[periods.length-1][3] = values[r][0].filter(
+      (e)=>e.startsWith(perNot[stat2])).map(
+        (e)=>e.slice(perNot[stat2].length));
+  }
+  values[i][j][k] = perNot[stat2] + elem2;
 }
 
 function isTip(i,j,k) {
-  stat = -1;
+  stat = 0;
   elem = values[i][j][k];
   val = elem.toLowerCase();
-  for(var q = 0; q<2; q++) {
+  for(var q = 1; q<3; q++) {
     if(val.startsWith(perNot[q])) {
       elem = values[i][j][k].slice(perNot[q].length).trim();
       val = elem.toLowerCase();
@@ -598,7 +644,7 @@ function searching(r,d,f) {
   var stop = true;
   if(val2!=val) {
     stop = false;
-    for(var q = 0; q<2; q++) {
+    for(var q = 1; q<3; q++) {
       elem2 = values[r][d][f].slice(perNot[q].length).trim();
       val2 = elem2.toLowerCase();
       if(val2==val) {
@@ -607,7 +653,7 @@ function searching(r,d,f) {
       }
     }
   }
-  stat2 = -1;
+  stat2 = 0;
   return stop;
 }
 
@@ -651,7 +697,7 @@ function putSugg(i,k) {
       elem += ' -2';
     }
     val = elem.toLowerCase();
-    if(stat>-1) {
+    if(stat>0) {
       val = val.slice(perNot[stat].length);
     }
     stop = true;
@@ -673,7 +719,7 @@ function putSugg(i,k) {
 
 function updatePer() {
   for(var i = perLen; i<periods.length; i++) {
-    for(var q = 0; q<2; q++) {
+    for(var q = 1; q<3; q++) {
       if(periods[i][q] != -1) {
         continue;
       }
@@ -688,21 +734,20 @@ function updatePer() {
       perInt.push([]);
       data.push([true,[],[],-1]);
     }
-    data[periods[i][1]][1].push(periods[i][0]);
-    var c = periods[i][2];
+    var z = periods[i][1];
+    data[periods[i][2]][1].push(z);
+    var c = periods[i][0];
     if(c == -1) {
       continue;
     }
-    var z = periods[i][0];
-    for(var q = 0; q<2; q++) {
-      for(var m = 0; m<values[c][2].length; m++) {
-        values[z][2].push(values[c][2][m]);
-      }
-      for(var m = 0; m<values[c][3].length; m++) {
-        values[periods[i][1]][3].push(values[c][3][m]);
+    for(var q = 1; q<3; q++) {
+      for(var m = 0; m<values[c][q].length; m++) {
+        values[z][q].push(values[c][q][m]);
       }
     }
-    values[z][1] = values[z][1].concat(values[c][1]);
+    for(var m = 0; m<values[c][3].length; m++) {
+      values[periods[i][2]][3].push(values[c][3][m]);
+    }
     data[c] = 0;
   }
   perLen = periods.length;

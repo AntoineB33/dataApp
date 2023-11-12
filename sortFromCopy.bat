@@ -1,1 +1,1 @@
-wsl ./sortFromClip
+wsl ./sortFromCopy

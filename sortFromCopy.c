@@ -46,6 +46,7 @@ int main() {
     if(strcmp(name, "dataSpreadSheet") == 0) {
         while (name != NULL && strcmp(name, "\r\n") != 0) {
             if(count == 3) {
+                name = strtok(NULL, "\r");
                 char* command0 = "powershell.exe Get-Clipboard > data/";
                 char* ptr = name;
                 while((ptr = strstr(ptr, " ")) != NULL) {
@@ -70,7 +71,7 @@ int main() {
         if ((dir = opendir ("data/")) != NULL) {
             while ((ent = readdir (dir)) != NULL) {
                 if (ent->d_type == DT_REG) {
-                    if (strstr(ent->d_name, ".txt") != NULL) {
+                    if (strstr(ent->d_name, ".txt") != NULL && strstr(ent->d_name, "_sorted.txt") == NULL) {
                         files = realloc(files, (count+1) * sizeof(char*));
                         files[count] = strdup(ent->d_name);
                         printf("%d: %s\n", count+1, files[count]);

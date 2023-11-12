@@ -1,0 +1,13 @@
+dataSpreadSheet	1	3	0	test_Feuille 1
+
+1,2,3
+0,3
+
+
+names	following	after	before			url
+a						21770154_min.webp
+b	a					ri388d080srb1.jpg
+	b					view.mp4
+
+result.txt
+Affichage de result.txt
