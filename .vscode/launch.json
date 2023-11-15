@@ -6,7 +6,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/sortNotes",
             "args": [
-                "hello"
+                "dance_Feuille_1"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

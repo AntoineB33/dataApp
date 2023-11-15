@@ -9,51 +9,122 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <sys/file.h>
-
-#define INPUT "/mnt/c/Users/comma/Documents/health/news_underground/mediaSorter/dataApp/dataWorkSheet.txt"
-#define SORTF "/mnt/c/Users/comma/Documents/health/news_underground/mediaSorter/dataApp/sorted.txt"
+#include <dirent.h>
 
 
 int lenAgg;
-char** output;
-char* txt;
-int txtSize;
-FILE* file;
-char* line;
-char** values;
-char* token;
-int** linesRef;
-int* linesRefNb;
+char** output = NULL;
+char* txt = NULL;
+char* line = NULL;
+char** values = NULL;
+char* token = NULL;
+int** linesRef = NULL;
+int* linesRefNb = NULL;
 int lenVal;
+char* name = NULL;
+char** files = NULL;
+char* filePATH = NULL;
+int fileNb = 0;
+char* command;
 
 
-void freeAll(char* msg) {
-    fprintf(stderr, "%s\n", msg);
-    free(file);
-    exit(-1);
+void freeVar(void *var) {
+    if(var != NULL) {
+        free(var);
+    }
 }
 
-void freeAll0(char* msg) {
-    free(txt);
-    free(line);
-    free(values);
-    free(token);
-    free(linesRefNb);
-    for(int i = 0; i<lenAgg; i++) {
-        free(linesRef[i]);
+void freeList(char **var, int len) {
+    if(var != NULL) {
+        for(int i = 0; i<len; i++) {
+            free(var[i]);
+        }
+        free(var);
     }
-    for(int i = 0; i<lenVal; i++) {
-        free(values[i]);
-    }
-    free(linesRef);
-    free(values);
-    freeAll(msg);
+}
+
+void freeAll(char* msg) {
+    freeVar(txt);
+    freeVar(line);
+    freeVar(linesRefNb);
+    freeVar(name);
+    freeVar(command);
+    freeList(files, fileNb);
+    freeList(output, lenAgg);
+    freeList(values, lenVal);
+    fprintf(stderr, "%s\n", msg);
+    exit(0);
 }
 
 int main() {
-    file = fopen(INPUT, "r");
+
+    
+    size_t size = 0;
+    struct dirent *ent;
+    DIR *dir;
+    if ((dir = opendir ("data/")) != NULL) {
+        while ((ent = readdir (dir)) != NULL) {
+            if (ent->d_type == DT_REG) {
+                if (strstr(ent->d_name, ".txt") != NULL && strstr(ent->d_name, "_sorted.txt") == NULL) {
+                    files = realloc(files, (fileNb+1) * sizeof(char*));
+                    ent->d_name[strlen(ent->d_name)-4] = '\0';
+                    files[fileNb] = strdup(ent->d_name);
+                    printf("%d: %s\n", fileNb+1, files[fileNb]);
+                    fileNb++;
+                }
+            }
+        }
+        closedir (dir);
+    } else {
+        closedir (dir);
+        freeAll("Failed to open directory");
+    }
+    if(fileNb==0) {
+        freeAll("No data found.");
+    }
+    while(1) {
+        if (getline(&name, &size, stdin) == -1) {
+            freeAll("Error reading input");
+        }
+        int choice = atoi(name);
+        if(choice > 0 && choice <= fileNb) {
+            name = strdup(files[choice-1]);
+            break;
+        }
+        printf("Invalid input.\n");
+    }
+
+
+
+
+    filePATH = malloc(strlen(name) + 20);
+    sprintf(filePATH, "data/%s.txt", name);
+
+    
+
+
+    FILE* file = fopen(filePATH, "r");
+
+
+    
+    // filePATH = realloc(filePATH, strlen(name) + 20);
+    // sprintf(filePATH, "data/dance_Feuille_1_sorted.txt");
+    // file = fopen(filePATH, "r");
+    // fclose(file);
+    // sprintf(filePATH, "data/test_Feuille_1_sorted.txt");
+    // file = fopen(filePATH, "r");
+    // fclose(file);
+    // sprintf(filePATH, "data/dance_Feuille_1_sorted.txt");
+    // file = fopen(filePATH, "r");
+    // fclose(file);
+    // sprintf(filePATH, "data/test_Feuille_1_sorted.txt");
+    // file = fopen(filePATH, "r");
+    // fclose(file);
+
+
+    
     if (file == NULL) {
-        freeAll("Failed to open input the file.");
+        freeAll("Failed to open the data file.");
     }
     int filNo = fileno(file);
     if (flock(filNo, LOCK_EX) == -1) {
@@ -67,14 +138,15 @@ int main() {
         line++;
     }
     token = strtok(line, "\t");
+    token = strtok(NULL, "\t");
     lenAgg = atoi(token);
     token = strtok(NULL, "\t");
     lenVal = atoi(token);
     getline(&line, &len, file);
-    int count;
     linesRef = malloc(lenAgg * sizeof(int*));
     int mediaNb = 0;
     linesRefNb = malloc(lenAgg * sizeof(int*));
+    int count = 0;
     for(int i = 0; i<lenAgg; i++) {
         getline(&line, &len, file);
         linesRef[i] = malloc(lenVal * sizeof(int));
@@ -105,7 +177,7 @@ int main() {
         strcat(values[lenVal-1], "\r\n");
     }
     output = malloc(lenAgg * sizeof(char*));
-    int txtSize = 1;
+    int txtSize = strlen(txt);
     for(int i = 0; i<lenAgg; i++) {
         output[i] = strdup(values[linesRef[i][0]]);
         for(int j = 1; j<linesRefNb[i]; j++) {
@@ -114,18 +186,21 @@ int main() {
         }
         txtSize += strlen(output[i]);
     }
-    txt = malloc(txtSize);
+    txt = realloc(txt, txtSize);
 
-
-    file = fopen(SORTF, "r");
+    sprintf(filePATH, "data/%s_sorted.txt", name);
+    file = fopen(filePATH, "r");
     if (file == NULL) {
-        freeAll0("Failed to open the sorted file.");
+        freeAll("Failed to open the sorted file.");
     }
     int fileNo = fileno(file);
     if (flock(fileNo, LOCK_EX) == -1) {
-        freeAll0("Failed to obtain lock for the sorted file");
+        freeAll("Failed to obtain lock for the sorted file");
     }
     getline(&line, &len, file);
+    if (line == NULL) {
+        freeAll("Failed to read the first line of the sorted file.");
+    }
     flock(fileNo, LOCK_UN);
     fclose(file);
     token = strtok(line, ",");
@@ -133,18 +208,26 @@ int main() {
     while(token!=NULL && token[0] != '\r') {
         int i = atoi(token);
         if(i>=lenAgg) {
-            freeAll0("Not sorted yet.");
+            freeAll("Not sorted yet.");
         }
         strcat(txt, output[i]);
         token = strtok(NULL, ",");
         count++;
     }
     if(count!=lenAgg) {
-        freeAll0("Not sorted yet.");
+        freeAll("Not sorted yet.");
     }
-    char* command = malloc(txtSize);
-    sprintf(command, "/mnt/c/Windows/System32/echo.exe %s | /mnt/c/Windows/System32/clip.exe", txt); // Format the command
-    system(command);
-    free(command);
-    freeAll0("Success");
+    FILE *clipboard = popen("clip.exe", "w");
+    if (clipboard == NULL) {
+        freeAll("Error opening clipboard");
+    }
+
+    // Write the text to the clipboard
+    fprintf(clipboard, "%s", txt);
+
+    // Close the pipe
+    if (pclose(clipboard) != 0) {
+        freeAll("Error closing clipboard");
+    }
+    freeAll("Success");
 }

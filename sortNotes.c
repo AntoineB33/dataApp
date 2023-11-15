@@ -339,11 +339,13 @@ int main(int argc, char *argv[]) {
     token = strtok(NULL, "\t");
     attNb = atoi(token);
     getline(&line, &len, file);
+    //char* te = "hey,hier,hoi2";
+    //line = strdup(te);
     attributes = malloc(attNb * sizeof(attribute));
-    token = strtok(line, "\t");
+    token = strtok(line, ",");
     for(int i = 0; i<attNb; i++) {
         attributes[i].dist = atoi(token);
-        token = strtok(NULL, "\t");
+        token = strtok(NULL, ",");
     }
     int count;
     trees = malloc(lenAgg * sizeof(treeCons));

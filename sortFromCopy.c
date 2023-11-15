@@ -22,7 +22,6 @@ void freeVar(void *var) {
 
 void freeAll(char* msg) {
     freeVar(command);
-    freeVar(name);
     freeVar(files);
     fprintf(stderr, "%s\n", msg);
     exit(0);

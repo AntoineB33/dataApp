@@ -70,17 +70,101 @@ function onEdit(e) {
   if("url"!=values[colNumb-1]) {
     sheet.getRange(1, colNumb).setValue("url");
   }
+
+  //Each cell becomes a list
   var length = colNumb - stat;
   var fillSide = Array.from({ length: length });
   fillSide = fillSide.map(function (v, i) {return [];});
   values0 = JSON.parse(JSON.stringify(values));
+  var toSortImg = false;
   for(var i = 1; i<nbLineBef; i++) {
     values[i] = values[i].concat(fillSide);
     for(var j = 0; j<colNumb+1; j++) {
       values[i][j] = values[i][j].toString().split(';').map(function (v, i) {return v.trim();}).filter(function(e) {
         return e !== ""});
     }
+    if(values[0].length>=colNumb+2 && values[i][colNumb+2]) {
+      var int = parseInt(values[i][colNumb+2]);
+      if(!isNaN(int)) {
+      }
+    }
   }
+
+  //Get the list of the references of images
+  if(values[0].length>=colNumb+2) {
+    let imgRef = []
+    let maxRef = 0;
+    let notMatching = false;
+    let moveImg = 0;
+    for(let i = 1; i<nbLineBef; i++) {
+      let int = parseInt(values[i][colNumb+1]);
+      if(!isNaN(int)) {
+        sheet.getRange(i+1, colNumb+2).clear();
+        imgRef.push([i,int]);
+        moveImg = 1;
+        if(int>maxRef) {
+          maxRef = int;
+        }
+      } else if (values[i][colNumb+1]){
+        notMatching = true;
+      }
+    }
+    if(moveImg && !notMatching) {
+      let isCalled = [];
+      for(let i = 0; i<maxRef; i++) {
+        isCalled.push(0);
+      }
+      for(let i = 0; i<imgRef.length; i++) {
+        if(isCalled[i]) {
+          notMatching = true;
+          break;
+        }
+        isCalled[i] = 1;
+      }
+      if(!notMatching && !isCalled.includes(1)) {
+        let img = [];
+        for(let i = 1; i<nbLineBef; i++) {
+          if(values[i][colNumb]) {
+            let sourceCell = sheet.getRange(i+1, colNumb+1);
+            if(values[i][colNumb]!="CellImage") {
+              sourceCell.clear();
+              continue;
+            }
+            let inlineImages = sourceCell.getRichTextValue().getInlineImages();
+            if(inlineImages.length==0) {
+              sourceCell.clear();
+              continue;
+            }
+            img.push([i,inlineImages[0]]);
+            if(img.length>imgRef.length) {
+              break;
+            }
+          }
+        }
+        if(img.length==imgRef.length) {
+          let j = 0;
+          let g = 0;
+          for(let i = 1; i<nbLineBef; i++) {
+            if(imgRef[j][0]==i) {
+              if(img[g][0]==i) {
+                if(imgRef[j][1]!=g) {
+                  sheet.getRange(i+1, colNumb+2).setRichTextValue(SpreadsheetApp.newRichTextValue().setInlineImage(img[imgRef[j][0]][1]).build());
+                }
+                g++;
+              } else {
+                sheet.getRange(i+1, colNumb+2).setRichTextValue(SpreadsheetApp.newRichTextValue().setInlineImage(img[imgRef[j][0]][1]).build());
+              }
+              i++;
+            } else if(img[g][0]==i) {
+              sheet.getRange(i+1, colNumb+2).setRichTextValue(SpreadsheetApp.newRichTextValue().setInlineImage([]).build());
+              g++;
+            }
+          }
+        }
+      }
+    }
+  }
+
   nbLine0 = nbLineBef;
   for(var i = nbLineBef-1; i>0; i--) {
     if(values[i].some((v,j)=>v.length!=0 && j<colNumb)) {
@@ -782,9 +866,13 @@ function dataGenerator() {
           row.attr.map((row)=>row.slice(0,3).join(',')).join('\t')
         ].join('\n')
       ).join('\n')+"\n"
-      +values0.slice(0,nbLineBef).map(function(row) {
-        return row.slice(0,colNumb).join('\t');
-      }).join('\n');
+      +values.map((row)=>row.map(function(cell) {
+        if(Array.isArray(cell)) {
+          return cell.join('; ');
+        } else {
+          return cell;
+        }}).slice(0,colNumb+1).join('\t')).join('\n');
+    console.log(values.length);
     for(var i = 5; i<nbLine0; i++) {
       if(values0[i][colNumb].length!=0 && i!=nbLineBef+9) {
         sheet.getRange(i+1,colNumb+1).clear();

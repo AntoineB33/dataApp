@@ -6,8 +6,10 @@
 #include <dirent.h>
 
 
+char* name = NULL;
+FILE* clipboard = NULL;
 char* command = NULL;
-char* token;
+char* firstLine = NULL;
 char** files = NULL;
 DIR *dir = NULL;
 
@@ -32,7 +34,7 @@ int main() {
     if ((dir = opendir ("data/")) != NULL) {
         while ((ent = readdir (dir)) != NULL) {
             if (ent->d_type == DT_REG) {
-                if (strstr(ent->d_name, ".txt") != NULL) {
+                if (strstr(ent->d_name, ".txt") != NULL && strstr(ent->d_name, "_sorted.txt") == NULL) {
                     files = realloc(files, (count+1) * sizeof(char*));
                     files[count] = strdup(ent->d_name);
                     printf("%d: %s\n", count+1, files[count]);
@@ -49,25 +51,22 @@ int main() {
         freeAll("No data found.");
     }
     while(1) {
-        if (getline(&command, &size, stdin) == -1) {
+        if (getline(&name, &size, stdin) == -1) {
             freeAll("Error reading input");
         }
-        int choice = atoi(command);
+        int choice = atoi(name);
         if(choice > 0 && choice <= count) {
-            command = strdup(files[choice-1]);
+            name = strndup(files[choice-1], strlen(files[choice-1])-4);
             break;
         }
         printf("Invalid input.\n");
     }
-    char* command0 = "powershell.exe Get-Clipboard > data/";
-    char* command2 = ".txt && ./sortNotes";
-    command = realloc(command, strlen(command0) + strlen(command) + strlen(command2));
-    sprintf(command, "%s%s%s", command0, command, command2);
-    strcat(command, command);
+    char* command2 = "./sortNotes ";
+    command = malloc(strlen(command2) + strlen(name)+1);
+    sprintf(command, "%s%s", command2, name);
     int status = system(command);
     if(status != 0) {
         freeAll("Failed to sort notes.\n");
     }
     freeAll("");
-    return 0;
 }
