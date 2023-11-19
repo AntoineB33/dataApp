@@ -1,3 +1,4 @@
+#include "mediaSorter.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,87 +13,32 @@
 #include <dirent.h>
 
 
-int lenAgg;
-char** output = NULL;
-char* txt = NULL;
-char* line = NULL;
-char** values = NULL;
-char* token = NULL;
-int** linesRef = NULL;
-int* linesRefNb = NULL;
-int lenVal;
-char* name = NULL;
-char** files = NULL;
-char* filePATH = NULL;
-int fileNb = 0;
-char* command;
 
-
-void freeVar(void *var) {
-    if(var != NULL) {
-        free(var);
-    }
-}
-
-void freeList(char **var, int len) {
-    if(var != NULL) {
-        for(int i = 0; i<len; i++) {
-            free(var[i]);
-        }
-        free(var);
-    }
-}
-
-void freeAll(char* msg) {
-    freeVar(txt);
-    freeVar(line);
-    freeVar(linesRefNb);
-    freeVar(name);
-    freeVar(command);
-    freeList(files, fileNb);
-    freeList(output, lenAgg);
-    freeList(values, lenVal);
-    fprintf(stderr, "%s\n", msg);
-    exit(0);
-}
 
 int main() {
 
     
-    size_t size = 0;
-    struct dirent *ent;
-    DIR *dir;
-    if ((dir = opendir ("data/")) != NULL) {
-        while ((ent = readdir (dir)) != NULL) {
-            if (ent->d_type == DT_REG) {
-                if (strstr(ent->d_name, ".txt") != NULL && strstr(ent->d_name, "_sorted.txt") == NULL) {
-                    files = realloc(files, (fileNb+1) * sizeof(char*));
-                    ent->d_name[strlen(ent->d_name)-4] = '\0';
-                    files[fileNb] = strdup(ent->d_name);
-                    printf("%d: %s\n", fileNb+1, files[fileNb]);
-                    fileNb++;
-                }
-            }
-        }
-        closedir (dir);
-    } else {
-        closedir (dir);
-        freeAll("Failed to open directory");
+    char* name = askFile();
+    if(name = NULL) {
+        return -1;
     }
-    if(fileNb==0) {
-        freeAll("No data found.");
-    }
-    while(1) {
-        if (getline(&name, &size, stdin) == -1) {
-            freeAll("Error reading input");
-        }
-        int choice = atoi(name);
-        if(choice > 0 && choice <= fileNb) {
-            name = strdup(files[choice-1]);
-            break;
-        }
-        printf("Invalid input.\n");
-    }
+    // char* name = malloc(20);
+    // strcpy(name, "dance_Feuille_1");
+
+    
+    int lenAgg;
+    char** output = NULL;
+    char* txt = NULL;
+    char* line = NULL;
+    char** values = NULL;
+    char* token = NULL;
+    int** linesRef = NULL;
+    int* linesRefNb = NULL;
+    int lenVal;
+    char** files = NULL;
+    char* filePATH = NULL;
+    int fileNb = 0;
+    char* command;
 
 
 
@@ -103,32 +49,16 @@ int main() {
     
 
 
-    FILE* file = fopen(filePATH, "r");
-
-
-    
-    // filePATH = realloc(filePATH, strlen(name) + 20);
-    // sprintf(filePATH, "data/dance_Feuille_1_sorted.txt");
-    // file = fopen(filePATH, "r");
-    // fclose(file);
-    // sprintf(filePATH, "data/test_Feuille_1_sorted.txt");
-    // file = fopen(filePATH, "r");
-    // fclose(file);
-    // sprintf(filePATH, "data/dance_Feuille_1_sorted.txt");
-    // file = fopen(filePATH, "r");
-    // fclose(file);
-    // sprintf(filePATH, "data/test_Feuille_1_sorted.txt");
-    // file = fopen(filePATH, "r");
-    // fclose(file);
-
-
-    
+    FILE* file;
+    file = fopen(filePATH, "r");
     if (file == NULL) {
-        freeAll("Failed to open the data file.");
+        printf("Failed to open the data file.");
+        return -1;
     }
     int filNo = fileno(file);
     if (flock(filNo, LOCK_EX) == -1) {
-        freeAll("Failed to obtain lock for the input file");
+        printf("Failed to obtain lock for the input file");
+        return -1;
     }
     
     
@@ -177,7 +107,7 @@ int main() {
         strcat(values[lenVal-1], "\r\n");
     }
     output = malloc(lenAgg * sizeof(char*));
-    int txtSize = strlen(txt);
+    int txtSize = strlen(txt) + 10;
     for(int i = 0; i<lenAgg; i++) {
         output[i] = strdup(values[linesRef[i][0]]);
         for(int j = 1; j<linesRefNb[i]; j++) {
@@ -189,45 +119,49 @@ int main() {
     txt = realloc(txt, txtSize);
 
     sprintf(filePATH, "data/%s_sorted.txt", name);
+    // 
     file = fopen(filePATH, "r");
     if (file == NULL) {
-        freeAll("Failed to open the sorted file.");
+        printf("Failed to open the sorted file.");
+        return -1;
     }
     int fileNo = fileno(file);
     if (flock(fileNo, LOCK_EX) == -1) {
-        freeAll("Failed to obtain lock for the sorted file");
+        printf("Failed to obtain lock for the sorted file");
+        return -1;
     }
     getline(&line, &len, file);
     if (line == NULL) {
-        freeAll("Failed to read the first line of the sorted file.");
+        printf("Failed to read the first line of the sorted file.");
+        return -1;
     }
     flock(fileNo, LOCK_UN);
     fclose(file);
+    // 
     token = strtok(line, ",");
     count = 0;
+    int yh = 0;
     while(token!=NULL && token[0] != '\r') {
         int i = atoi(token);
         if(i>=lenAgg) {
-            freeAll("Not sorted yet.");
+            printf("Not sorted yet.");
+            return -1;
         }
         strcat(txt, output[i]);
         token = strtok(NULL, ",");
         count++;
+        yh = i;
     }
     if(count!=lenAgg) {
-        freeAll("Not sorted yet.");
+        printf("Not sorted yet.");
+        return -1;
     }
+
     FILE *clipboard = popen("clip.exe", "w");
     if (clipboard == NULL) {
-        freeAll("Error opening clipboard");
+        printf("Error opening clipboard");
+        return -1;
     }
-
-    // Write the text to the clipboard
     fprintf(clipboard, "%s", txt);
-
-    // Close the pipe
-    if (pclose(clipboard) != 0) {
-        freeAll("Error closing clipboard");
-    }
-    freeAll("Success");
+    pclose(clipboard);
 }

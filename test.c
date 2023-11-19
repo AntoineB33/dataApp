@@ -1,32 +1,52 @@
+#include "mediaSorter.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
 #include <unistd.h>
+#include <math.h>
+#include <limits.h>
+#include <pthread.h>
+#include <ctype.h>
 #include <fcntl.h>
 #include <sys/file.h>
+#include <dirent.h>
+
+
+
 
 int main() {
-    int fd;
+
     
-    // Open the file for writing and obtain a lock
-    fd = open("shared_file.txt", O_WRONLY | O_CREAT, 0666);
-    if (fd == -1) {
-        perror("Failed to open file");
-        exit(1);
+
+    
+    int lenAgg;
+    char** output = NULL;
+    char* txt = NULL;
+    char* line = NULL;
+    char** values = NULL;
+    char* token = NULL;
+    int** linesRef = NULL;
+    int* linesRefNb = NULL;
+    int lenVal;
+    char** files = NULL;
+    char* filePATH = NULL;
+    int fileNb = 0;
+    char* command;
+    FILE *clipboard = popen("clip.exe", "w");
+    if (clipboard == NULL) {
+        printf("Error opening clipboard");
+        return -1;
     }
-    if (flock(fd, LOCK_EX) == -1) {
-        perror("Failed to obtain lock");
-        exit(1);
+    char* tr = malloc(9957);
+    if (tr == NULL) {
+        printf("Error allocating memory");
+        return -1;
     }
-    
-    
-    
-    // Write data to the file
-    write(fd, "Data from C Executable", 22);
-    sleep(20);
-    
-    // Release the lock and close the file
-    flock(fd, LOCK_UN);
-    close(fd);
-    
-    return 0;
+    strcpy(tr,"e");
+    for(int i = 0; i<9956; i++){
+        strcat(tr,"e");
+    }
+    fprintf(clipboard, "%s", tr);
+    pclose(clipboard);
 }

@@ -1,0 +1,672 @@
+dataSpreadSheet	123	174	46	dance_Feuille 1
+0,0,28,8,0,2,2,0,0,2,0,6,0,2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0
+1
+0,0
+
+
+2
+1,1
+2,89
+0,0,1	23,0,1
+3
+1,1
+89
+1,0,1	24,0,1
+7
+1,1
+4,90
+3,0,1	26,0,1
+8
+1,1
+90
+4,0,1	27,0,1
+20
+1,1
+92
+7,0,1
+25
+1,0
+71
+
+28
+2,1
+71,94
+8,0,1
+30
+1,0
+75
+
+36
+1,1
+60,79
+2,0,1
+40
+1,1
+96
+5,0,1	6,0,1	32,0,1
+41
+1,1
+61,62
+2,0,1
+45
+2,1
+98,100
+3,0,1
+48
+3,1
+102,104
+2,0,1	33,0,1
+49
+1,1
+63
+2,0,1
+56
+1,1
+106
+2,0,1	35,0,1
+58
+1,1
+108
+2,0,1
+59
+2,1
+13
+2,0,1
+68
+0,1
+
+2,0,1	33,0,1
+69
+0,1
+
+2,0,1
+70
+0,1
+
+11,0,1
+71
+0,1
+
+
+72
+0,1
+
+12,0,1	38,0,1
+73
+0,1
+
+2,0,1
+74
+0,1
+
+2,0,1	39,0,1
+75
+0,1
+
+2,0,1
+76
+0,1
+
+9,0,1	40,0,1
+77
+0,1
+
+13,0,1	41,0,1
+78
+0,1
+
+3,0,1
+79
+0,1
+
+14,0,1
+80
+0,1
+
+3,0,1
+81
+0,1
+
+3,0,1	2,0,1
+82
+0,1
+
+3,0,1
+83
+0,1
+
+15,0,1
+84
+0,1
+
+2,0,1
+85
+0,1
+
+
+86
+0,1
+
+11,0,1
+87
+0,1
+
+11,0,1
+88
+0,1
+
+11,0,1
+89
+0,1
+
+11,0,1
+90
+0,1
+
+16,0,1
+91
+0,1
+
+
+92
+0,1
+
+17,0,1
+93
+0,1
+
+18,0,1	42,0,1
+94
+0,1
+
+19,0,1
+95
+0,1
+
+20,0,1	43,0,1
+96
+0,1
+
+2,0,1	44,0,1
+97
+0,1
+
+
+98
+0,1
+
+21,0,1	45,0,1
+99
+0,1
+
+19,0,1
+100
+0,1
+
+11,0,1
+101
+0,1
+
+22,0,1
+102
+0,1
+
+2,0,1
+103
+0,1
+
+
+104
+0,1
+
+3,0,1
+105
+0,1
+
+2,0,1
+106
+0,1
+
+13,0,1
+107
+0,0
+66,90
+
+108
+2,0
+
+
+110
+1,0
+58
+
+111,38
+1,1
+11,99
+2,0,1	31,0,1
+112
+3,0
+79
+
+113,46
+1,1
+14,64,86,95,101,103,105,107
+2,0,1	30,0,1
+114
+8,0
+61
+
+115
+1,0
+74,91
+
+116
+2,0
+63
+
+117
+1,0
+68
+
+118
+1,0
+58
+
+119
+1,0
+72
+
+120
+1,0
+67
+
+121
+1,0
+6,7
+
+122
+2,0
+73
+
+123
+1,0
+70
+
+124
+1,0
+69
+
+125
+1,0
+8,76
+
+126
+2,0
+65
+
+127
+1,0
+77
+
+128
+1,0
+75
+
+129,14
+1,1
+9
+2,0,1
+130
+2,0
+
+
+131
+0,0
+81,84,97
+
+132
+2,0
+
+
+133,54
+1,1
+83,102
+2,0,1	34,0,1
+134
+1,0
+63
+
+135
+2,0
+85
+
+136
+1,0
+81
+
+137,61
+1,1
+87
+2,0,1	36,0,1
+138
+1,0
+63
+
+139
+0,0
+1
+
+140,141,6
+2,1
+3
+2,0,1	25,0,1
+142,109,10
+3,1
+59,109
+2,0,1	28,0,1
+143
+1,0
+5
+
+144
+1,0
+65
+
+145
+0,0
+7,94
+
+146
+2,0
+
+
+147
+1,0
+10
+
+148
+1,0
+63
+
+149
+1,0
+12,98
+
+150
+2,0
+84
+
+151
+1,0
+12
+
+152
+1,0
+61
+
+153
+1,0
+13,82
+
+154
+2,0
+63
+
+155
+1,0
+13,17,104
+
+156
+2,0
+63,121
+
+157
+1,0
+15
+
+158
+1,0
+63
+
+159
+1,0
+16
+
+160
+1,0
+17
+
+161,12
+1,1
+78,110
+2,0,1	29,0,1
+162
+1,0
+
+
+163,17
+0,1
+112
+5,0,1	6,0,1
+164
+1,0
+
+
+165,33
+0,1
+114
+9,0,1	30,0,1
+166
+1,0
+
+
+167,35
+0,1
+116
+10,0,1
+168
+1,0
+
+
+169,63
+0,1
+118
+2,0,1
+170
+1,0
+
+
+171,64
+0,1
+120
+3,0,1
+172
+1,0
+
+
+173,66,67
+1,2
+122
+2,0,1	37,0,1	2,1,2
+174
+1,0
+
+
+names	following	after	before	characters	musics	era	url	result
+								
+sexy dance fancam				Hong Jieun	ZERO TWO DANCE	dance intro	https://www.youtube.com/watch?v=ufszyK8X5g8	
+sexy chore		sexy dance fancam		Denise Blue Choreography	Havana	dance intro	https://www.youtube.com/watch?v=DxmdySilOAI	
+dance intro								
+dance idols intro	dance intro							
+miku mmd	start:dance idols intro			miku	Catch the Wave		https://www.youtube.com/watch?v=YlmeJfS9b34	
+rin mmd		miku mmd		rin	Sweet Magic	dance idols intro	https://www.youtube.com/watch?v=6jJTqMKiavQ	
+sirius sexy mmd		rin mmd		sirius	Wiggle Wiggle	dance idols intro	https://www.youtube.com/watch?v=9ZvjEjX5XXE	
+miku strips	dance idols intro					underwear in clip		
+miku strip sexy	start:miku strips	sirius sexy mmd		miku	Ura Omote Lovers		https://www.youtube.com/watch?v=RMPfwMx3A5k	
+miku full bikini		miku strip sexy				miku strips		
+miku string dance	start:miku full bikini			miku	Unknown Mother Goose		https://www.youtube.com/watch?v=1mj1BxbWFKc	
+miku fully strips		miku string dance						
+miku full strip hypnos	start:miku fully strips	miku string dance		miku			https://ecchi.iwara.tv/videos/nmlgyi44nfpj3a2a	
+miku sex		miku strip cabaret				miku happy to be naked		
+KM sex on stage						miku sex		
+KM sex surprise	start:KM sex on stage			Kizuna AI; Mirai Akari			https://ecchi.iwara.tv/videos/azj8lukmzmh84rgzw?playlist=1058400&language=en	
+gangbang						miku sex		
+loli gangbang						gangbang		
+Uruha Rushia service gangbang day				Uruha Rushia		loli gangbang	https://ecchi.iwara.tv/videos/eo1k3i7b6gsk4e91w	
+underwear in clip								
+nude in clip						underwear in clip		
+sex in clip						nude in clip		
+sex in public						sex in clip		
+sex photoshoot						bukkake photoshoot		
+bukkake photoshoot						sex in public		
+akari sex								
+Akari Bukkake				akari		bukkake photoshoot; akari sex	https://ecchi.iwara.tv/videos/bmrwacaegbc3vgkzd	
+services						gangbang		
+services society						services		
+loli services						services		
+loli services society						loli services		
+loli miku service	start:loli services society			loli miku	LUVORATORRRRRY!		https://ecchi.iwara.tv/videos/1z3y5ibvrls3bene4?language=en	
+murasame services						services		
+murasame the service club	start:murasame services			murasame			https://ecchi.iwara.tv/videos/y5aglhj7lyh0x83yl	
+miku time stop strip				miku		miku fully strips	https://ecchi.iwara.tv/videos/5awgwujmwhwvnayn	
+miku happy to be naked		miku time stop strip				miku fully strips		
+miku cosplay strip concert	start:miku happy to be naked			miku	Hi-Fi Raver		https://ecchi.iwara.tv/videos/ajplrio3ei7vyj63	
+mirai akari happy to be naked						miku sex		
+KM strip audition				Kizuna AI; Mirai Akari	Disturb Manic Girl	mirai akari happy to be naked	https://ecchi.iwara.tv/videos/y5z3es8eozt0dojj7?language=de	
+miku strip cabaret		miku cosplay strip concert		miku		miku happy to be naked	https://ecchi.iwara.tv/videos/qalmbtqmgfrv1zev	
+rin naked								
+rin embarassed to be naked						rin naked		
+miku happy to make her friend naked						miku happy to be naked		
+rin strip street hypnos miku				rin		rin embarassed to be naked; miku happy to make her friend naked	https://ecchi.iwara.tv/videos/9eomesen82izkwvgr?language=de	
+miku 1st sex	start:miku sex			miku	LUVORATORRRRRY!		https://ecchi.iwara.tv/videos/jglwef6aznteyyar5	
+miku sex empty street						miku sex		
+miku sex solo street		miku double sex		miku	dunot hole	miku sex empty street; only miku has sex	https://ecchi.iwara.tv/videos/kwjoptqrehz2zzap	
+miku halloween				miku		miku sex	https://ecchi.iwara.tv/videos/k6q6xswwkizwgzv1	
+only miku has sex						miku sex		
+rin happy to be naked		rin embarassed to be naked				rin naked		
+rin sex						len sex; rin happy to be naked		
+len sex						miku sex		
+miku making systematic love with len	start:len sex			miku	Systematic Love	len sex; miku sex empty street	https://ecchi.iwara.tv/videos/v7j0lskl0se3rlgj	
+miku full time service						miku sex		
+miku sailor suit				miku	again and again	miku full time service	https://ecchi.iwara.tv/videos/gmwygf41oyh7evnon	
+miku ashamed of sex						miku sex		
+miku unwanted sex				miku		miku ashamed of sex	https://ecchi.iwara.tv/videos/y6or2igazi0o7zey	
+miku double sex		miku ashamed of sex		miku		only miku has sex	https://ecchi.iwara.tv/videos/ajgqqtrmdf7vaj4m	
+miku raped public						miku sex		
+miku rape apple pie	start:miku raped public			miku	apple pie		https://ecchi.iwara.tv/videos/agme9imd7gu8m6pk5	
+miku photoshoot sex						miku raped public		
+miku cum conv	start:miku photoshoot sex			miku			https://ecchi.iwara.tv/videos/m41jdtqg7jcoq4gbp	
+rin 1st condom sex street	start:rin sex			rin			https://ecchi.iwara.tv/videos/jqmyrcp8glcwo7em3	
+miku and her friends sex		only miku has sex				miku sex		
+miku_team conqueror	start:miku and her friends sex			miku	Conqueror		https://ecchi.iwara.tv/videos/p1omwcdbyuoababy?page=1&language=ja	
+miku bonus scene	miku_team conqueror			miku			https://ecchi.iwara.tv/videos/ya2a3i9jlioywo0p	
+miku gangbang closed				miku	dunot hole		https://ecchi.iwara.tv/videos/gyrezip5glco9wjve	
+miku 1st orgy bed				miku			https://ecchi.iwara.tv/videos/mayoph2kgc8gazaw	
+kizuna-akari 1st rape clip				kizuna-akari			https://ecchi.iwara.tv/videos/x55b5i7zliwvwg90	
+kizuma-akari rape service tied up							https://ecchi.iwara.tv/videos/8gel7clkzilg6go3	
+cat gang rape				cat gang	Shake It Off		https://ecchi.iwara.tv/videos/2wvl7tjequqvybaq	
+miku fan flying dicks				miku			https://ecchi.iwara.tv/videos/ldvzztp0viwrvqor	
+miku flying dicks				miku	Gimme Gimme		https://ecchi.iwara.tv/videos/edrb4uybvfkamvye	
+miku 1st service				miku			https://ecchi.iwara.tv/videos/qggvntb1gurymbv0	
+loli miku mmd				loli miku	Tell Your World		https://ecchi.iwara.tv/videos/kage9cy6baiqwp6x6?language=en	
+haku service gangbang pool				haku	Koshitantan		https://ecchi.iwara.tv/videos/wgg6vurzoosyo14lm?language=en	
+rin 1st condom service				rin			https://ecchi.iwara.tv/videos/bzankt7ly2slzakeb	
+loli rin sketch				loli rin			https://ecchi.iwara.tv/videos/329l3ilaovc4ombvw?language=en	
+rin 1st raw sex				rin			https://ecchi.iwara.tv/videos/xgplzi9ggtwgymwj	
+rin_miku sex harem bed				rin; miku			https://ecchi.iwara.tv/videos/mm0nzf3mduo1q81r	
+rin 1st wc service				rin			https://ecchi.iwara.tv/videos/1nbv9tv0ki3vdlop	
+alicia loli service				alicia			https://ecchi.iwara.tv/videos/jpadgfp6yseaoy4o	
+miku à la chaîne				miku			https://ecchi.iwara.tv/videos/qvwabfe07ikbaqg2	
+ro500 1st public gangbang concert							a_luboratory_hq	
+kizuma-akari mouses 2nd rape				kizuna-akari			https://ecchi.iwara.tv/videos/ol2d6f1waks64gqaa	
+kizuma-Akari Bukkake conv				kizuna-akari			https://ecchi.iwara.tv/videos/bmrwacaegbc3vgkzd	
+kizuma-akari cum conv dance after				kizuna-akari			https://ecchi.iwara.tv/videos/el5baik8aqhkm22dw	
+kizuma-akari service 1 tv room				kizuna-akari			https://ecchi.iwara.tv/videos/ngzakigxzefpmdx84	
+maya rape gentleman's hands service				maya			https://ecchi.iwara.tv/videos/dy55mhrglckb3dxz?language=ja	
+kangxi-team 1st sex for pink hair							https://ecchi.iwara.tv/videos/m2z33crkklh8l8wgz	
+angels sequestration				angels			https://ecchi.iwara.tv/videos/reyrjilo9soaka51	
+dracula service sequestration				dracula	adios		https://ecchi.iwara.tv/videos/b7vkgsrdzi39vz3j	
+kangxi 1st service				kangxi			https://ecchi.iwara.tv/videos/q2gl3ubo45tl0ox63	
+elf student - new thang				elf student	new thang		https://ecchi.iwara.tv/videos/lbz7dikrwzi8jwajy	
+miku service school				miku	Hibikase		https://ecchi.iwara.tv/videos/jwa35fwr4otevy2qq?language=en	
+bilan of the week							https://ecchi.iwara.tv/videos/rooodtlyx6to5olyw	
+loli team - love logic				loli team	Love Logic		https://ecchi.iwara.tv/videos/mopw8ua742i8zgjvr?language=en	
+kangxi doctor				kangxi			https://ecchi.iwara.tv/videos/2wbryc9my1fqgbaa2	
+kizuma-akari service 1 maid				kizuna-akari			https://ecchi.iwara.tv/videos/bka5lck5okflq5mxd	
+jita rape at concert 1st				jita			https://ecchi.iwara.tv/videos/lnkalt0ll7fwbr15d	
+miku slave concert				miku			https://ecchi.iwara.tv/videos/bznpvs4owc3gmr4j	
+kangxi_ramses Forced confession							https://ecchi.iwara.tv/videos/blew9c4e7ph3vodzg	
+rin 2nd wc service				rin			https://ecchi.iwara.tv/videos/exlbqilejimrq910	
+miku jail				miku			https://ecchi.iwara.tv/videos/kmb4zhbkzdiqm4jbb?language=en	
+haku excuse me service				haku			https://ecchi.iwara.tv/videos/oky3kh4a2s1aea4e	
+start:underwear in clip							
+end:underwear in clip							
+start:miku strips	dance idols intro					underwear in clip	
+end:miku strips						underwear in clip	
+start:miku happy to be naked		miku time stop strip				miku fully strips	
+end:miku happy to be naked						miku fully strips	
+start:miku sex		miku strip cabaret				miku happy to be naked	
+end:miku sex						miku happy to be naked	
+start:gangbang						miku sex	
+end:gangbang						miku sex	
+start:nude in clip						underwear in clip	
+end:nude in clip						underwear in clip	
+start:sex in clip						nude in clip	
+end:sex in clip						nude in clip	
+start:bukkake photoshoot						sex in public	
+end:bukkake photoshoot						sex in public	
+start:sex in public						sex in clip	
+end:sex in public						sex in clip	
+start:services						gangbang	
+end:services						gangbang	
+start:loli services						services	
+end:loli services						services	
+start:miku fully strips		miku string dance					
+end:miku fully strips							
+start:rin naked							
+end:rin naked							
+start:len sex						miku sex	
+end:len sex						miku sex	
+start:rin happy to be naked		rin embarassed to be naked				rin naked	
+end:rin happy to be naked						rin naked	
+start:miku raped public						miku sex	
+end:miku raped public						miku sex	
+start:dance intro							
+end:dance intro							
+start:dance idols intro	dance intro						
+end:dance idols intro							
+start:loli gangbang						gangbang	
+end:loli gangbang						gangbang	
+start:akari sex							
+end:akari sex							
+start:mirai akari happy to be naked						miku sex	
+end:mirai akari happy to be naked						miku sex	
+start:rin embarassed to be naked						rin naked	
+end:rin embarassed to be naked						rin naked	
+start:miku happy to make her friend naked						miku happy to be naked	
+end:miku happy to make her friend naked						miku happy to be naked	
+start:miku sex empty street						miku sex	
+end:miku sex empty street						miku sex	
+start:only miku has sex						miku sex	
+end:only miku has sex						miku sex	
+start:miku full time service						miku sex	
+end:miku full time service						miku sex	
+start:miku ashamed of sex						miku sex	
+end:miku ashamed of sex						miku sex	
+start:miku full bikini		miku strip sexy				miku strips	
+end:miku full bikini						miku strips	
+start:KM sex on stage						miku sex	
+end:KM sex on stage						miku sex	
+start:loli services society						loli services	
+end:loli services society						loli services	
+start:murasame services						services	
+end:murasame services						services	
+start:miku photoshoot sex						miku raped public	
+end:miku photoshoot sex						miku raped public	
+start:rin sex						len sex; rin happy to be naked	
+end:rin sex						len sex; rin happy to be naked	
+start:miku and her friends sex		only miku has sex				miku sex	
+end:miku and her friends sex						miku sex	
+
+result.txt
+Affichage de result.txt

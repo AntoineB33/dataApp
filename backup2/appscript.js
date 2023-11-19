@@ -210,7 +210,9 @@ function onEdit(e) {
           if(stat == 0) {
             elem = elem2;
           } else {
-            addPerCond(r);
+            if(addPerCond(r,i,j,k)==-1) {
+              return -1;
+            }
             for(var c = 0; c<values[i][0].length; c++) {
               if(values[i][0][c].startsWith(perNot[stat]) && !periods[perRef[r]][3].some((e) => e.toLowerCase()==val)) {
                 periods[perRef[r]][3].push(elem);
@@ -222,11 +224,10 @@ function onEdit(e) {
           stop = true;
         }
       }
-      if(stat) {
-        if(!stop) {
-          addPer(i);
+      if(stat && !stop) {
+        if(addPerCond(i,i,j,k)==-1) {
+          return -1;
         }
-        periods[perRef[i]][stat] = i;
       }
       stop = false;
     }
@@ -245,7 +246,9 @@ function onEdit(e) {
             if(!searching(r,0,f)) {
               continue;
             }
-            found(r,i,j,k);
+            if(found(r,i,j,k)==-1) {
+              return;
+            }
             stop = true;
             break;
           }
@@ -292,7 +295,9 @@ function onEdit(e) {
             if(!searching(r,0,f)) {
               continue;
             }
-            found(r,i,j,k);
+            if(found(r,i,j,k)==-1) {
+              return;
+            }
             perInt[i].push(perRef[r]);
             stop = true;
             break;
@@ -331,12 +336,9 @@ function onEdit(e) {
     for(var j = 1; j<4; j++) {
       for(var k = 0; k<values[i][j].length; k++) {
         isTip(i,j,k);
-        for(var r = 1; r<nbLineBef; r++) {
+        for(var r = 1; r<values.length; r++) {
           for(var f = 0; f<values[r][0].length; f++) {
             if(searching(r,0,f)) {
-              if(perRef[r]>-1 && !val.startsWith(perNot[0]) && !val.startsWith(perNot[1])) {
-                r = periods[perRef[r]][1];
-              }
               stop = true;
               break;
             }
@@ -366,7 +368,9 @@ function onEdit(e) {
         }
         stop = false;
         if(stat>0) {
-          found(r,i,j,k);
+          if(found(r,i,j,k)==-1) {
+            return;
+          }
           updatePer();
         }
         perIntCont[i][j-1].push([r,stat]);
@@ -381,12 +385,12 @@ function onEdit(e) {
         var e = r;
         var is = i;
         var ie = i;
-        if(data[i]==0) {
+        if(perRef[i]>-1) {
           is = periods[perRef[i]];
           ie = is[2];
           is = is[1];
         }
-        if(data[r]==0) {
+        if(perRef[r]>-1) {
           r = periods[perRef[r]];
           e = r[2];
           r = r[1];
@@ -677,30 +681,32 @@ function onEdit(e) {
   exitAllways();
 }
 
-function addPer(r) {
-  perRef[r] = periods.length;
-  periods.push([r,-1,-1,[]]);
-}
-
 function addPerCond(r,i,j,k) {
   if(perRef[r] == -1) {
     values[i][j].splice(k,1);
     sugg(i,j);
+    return -1;
   }
   let b = perRef[r] == -2;
   if(b) {
-    addPer(r);
+    perRef[r] = periods.length;
+    periods.push([-1,-1,-1,[]]);
+    periods[perRef[r]][stat] = r;
   }
   return b;
 }
 
 function found(r,i,j,k) {
-  if(addPerCond(r,i,j,k) && stat2==0) {
+  var perIsTwo = addPerCond(r,i,j,k);
+  if(perIsTwo==-1) {
+    return -1;
+  }
+  if(perIsTwo && stat2==0) {
     periods[periods.length-1][3] = values[r][0].filter(
       (e)=>e.startsWith(perNot[stat2])).map(
         (e)=>e.slice(perNot[stat2].length));
   }
-  values[i][j][k] = perNot[stat2] + elem2;
+  values[i][j][k] = perNot[stat] + elem2;
 }
 
 function isTip(i,j,k) {
@@ -729,11 +735,13 @@ function searching(r,d,f) {
   if(val2!=val) {
     stop = false;
     for(var q = 1; q<3; q++) {
-      elem2 = values[r][d][f].slice(perNot[q].length).trim();
-      val2 = elem2.toLowerCase();
-      if(val2==val) {
-        stat2 = q;
-        return true;
+      if(values[r][d][f].startsWith(perNot[q])) {
+        elem2 = values[r][d][f].slice(perNot[q].length).trim();
+        val2 = elem2.toLowerCase();
+        if(val2==val) {
+          stat2 = q;
+          return true;
+        }
       }
     }
   }
@@ -819,7 +827,8 @@ function updatePer() {
       data.push([true,[],[],-1]);
     }
     var z = periods[i][1];
-    data[periods[i][2]][1].push(z);
+    var s = periods[i][2];
+    data[s][1].push(z);
     var c = periods[i][0];
     if(c == -1) {
       continue;
@@ -829,8 +838,26 @@ function updatePer() {
         values[z][q].push(values[c][q][m]);
       }
     }
+    if(values[6][1] == "dance idols intro") {
+      console.log('!');
+    }
     for(var m = 0; m<values[c][3].length; m++) {
-      values[periods[i][2]][3].push(values[c][3][m]);
+      values[s][3].push(values[c][3][m]);
+    }
+    if(values[6][1] == "dance idols intro") {
+      console.log('!');
+    }
+    for(let m = 1; m<3; m++) {
+      for(let j = 4; j<colNumb; j++) {
+        for(let k = 0; k<values[c][j].length; k++) {
+          if(!values[periods[i][m]][j].includes(values[c][j][k])) {
+            values[periods[i][m]][j].push(values[c][j][k]);
+          }
+        }
+      }
+    }
+    if(values[6][1] == "dance idols intro") {
+      console.log('!');
     }
     data[c] = 0;
   }
