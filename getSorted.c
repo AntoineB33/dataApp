@@ -12,20 +12,19 @@
 #include <sys/file.h>
 #include <dirent.h>
 
-
-
+char* dataPATH = "data/";
+char* sortedExtention = "_sorted";
 
 int main() {
 
     
     char* name = askFile();
-    if(name = NULL) {
+    if(name == NULL) {
         return -1;
     }
     // char* name = malloc(20);
     // strcpy(name, "dance_Feuille_1");
 
-    
     int lenAgg;
     char** output = NULL;
     char* txt = NULL;
@@ -36,15 +35,12 @@ int main() {
     int* linesRefNb = NULL;
     int lenVal;
     char** files = NULL;
-    char* filePATH = NULL;
     int fileNb = 0;
     char* command;
 
-
-
-
-    filePATH = malloc(strlen(name) + 20);
-    sprintf(filePATH, "data/%s.txt", name);
+    char* filePATH = strdup(name);
+    filePATH = realloc(filePATH, strlen(name) + strlen(dataPATH) + 5);
+    sprintf(filePATH, "%s%s.txt", dataPATH, name);
 
     
 
@@ -111,14 +107,15 @@ int main() {
     for(int i = 0; i<lenAgg; i++) {
         output[i] = strdup(values[linesRef[i][0]]);
         for(int j = 1; j<linesRefNb[i]; j++) {
-            output[i] = realloc(output[i], strlen(output[i])+strlen(values[linesRef[i][j]]));
+            output[i] = realloc(output[i], strlen(output[i])+strlen(values[linesRef[i][j]])+1);
             strcat(output[i], values[linesRef[i][j]]);
         }
         txtSize += strlen(output[i]);
     }
     txt = realloc(txt, txtSize);
 
-    sprintf(filePATH, "data/%s_sorted.txt", name);
+    filePATH = realloc(filePATH, strlen(filePATH) + strlen(sortedExtention) + 1);
+    sprintf(filePATH, "%s%s%s.txt", dataPATH, name, sortedExtention);
     // 
     file = fopen(filePATH, "r");
     if (file == NULL) {
@@ -137,7 +134,6 @@ int main() {
     }
     flock(fileNo, LOCK_UN);
     fclose(file);
-    // 
     token = strtok(line, ",");
     count = 0;
     int yh = 0;
@@ -156,12 +152,12 @@ int main() {
         printf("Not sorted yet.");
         return -1;
     }
-
     FILE *clipboard = popen("clip.exe", "w");
     if (clipboard == NULL) {
         printf("Error opening clipboard");
         return -1;
     }
+    // return 1;
     fprintf(clipboard, "%s", txt);
     pclose(clipboard);
 }

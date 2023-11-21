@@ -179,6 +179,7 @@ function onEdit(e) {
   data = [0];
   perInt = [0];
   perIntCont = [0];
+  var r;
   for(var i = 1; i<nbLineBef; i++) {
     perInt.push([]);
     perIntCont.push([[],[],[]]);
@@ -188,14 +189,13 @@ function onEdit(e) {
     }
     data.push([true, [], [], -1]);
     for(var k = 0; k<values[i][0].length; k++) {
-      stat = 0;
       isTip(i,0,k);
       //check if already before
       for(var r0 = 1; r0<=i; r0++) {
         if(r0==1) {
-          var r = i;
+          r = i;
         } else {
-          var r = r0-1;
+          r = r0-1;
         }
         for(var f = 0; f<values[r][0].length; f++) {
           if(r==i && f>=k || !searching(r,0,f)) {continue;}
@@ -207,63 +207,23 @@ function onEdit(e) {
             putSugg(i,k);
             return -1;
           }
-          if(stat == 0) {
-            elem = elem2;
-          } else {
-            if(addPerCond(r,i,j,k)==-1) {
-              return -1;
-            }
-            for(var c = 0; c<values[i][0].length; c++) {
-              if(values[i][0][c].startsWith(perNot[stat]) && !periods[perRef[r]][3].some((e) => e.toLowerCase()==val)) {
-                periods[perRef[r]][3].push(elem);
-              }
-            }
-          }
-          values[i][0][k] = perNot[stat]+elem2;
-          perRef[i] = perRef[r];
           stop = true;
+          break;
+        }
+        if(stop) {
+          break;
         }
       }
-      if(stat && !stop) {
-        if(addPerCond(i,i,j,k)==-1) {
+      if(stat || stop) {
+        if(!stop) {
+          r = i;
+          stat2 = stat;
+        }
+        if(found(r,i,0,k)==-1) {
           return -1;
         }
       }
       stop = false;
-    }
-  }
-  updatePer();
-  for(var i = 1; i<nbLineBef; i++) {
-    if(perRef[i]==-1) {
-      continue;
-    }
-    for(var j = 4; j<colNumb-1; j++) {
-      for(var k = 0; k<values[i][j].length; k++) {
-        elem = values[i][j][k];
-        val = elem.toLowerCase();
-        for(var r = 1; r<nbLineBef; r++) {
-          for(var f = 0; f<values[r][0].length; f++) {
-            if(!searching(r,0,f)) {
-              continue;
-            }
-            if(found(r,i,j,k)==-1) {
-              return;
-            }
-            stop = true;
-            break;
-          }
-          if(stop) {
-            break;
-          }
-        }
-        if(!stop) {
-          r = periods.length;
-          perInt[i].push(r);
-          periods.push([-1,-1,-1,[elem]]);
-        }
-        perInt[i].push(perRef[r]);
-        stop = false;
-      }
     }
   }
   updatePer();
@@ -273,30 +233,16 @@ function onEdit(e) {
   for(var j = 4; j<colNumb-1; j++) {
     attNames.push([]);
     for(var i = 1; i<nbLineBef; i++) {
-      if(perRef[i]!=-1) {
-        continue;
-      }
       for(var k = 0; k<values[i][j].length; k++) {
-        val = values[i][j][k].toLowerCase();
-        for(var r = 0; r<attNames[j-4].length; r++) {
-          if(attNames[j-4][r].toLowerCase()==val) {
-            data[i][2].push(acc+r);
-            attributes[acc+r]++;
-            stop = true;
-            break;
-          }
-        }
-        if(stop) {
-          stop = false;
-          continue;
-        }
-        for(var r = 1; r<values.length; r++) {
+        elem = values[i][j][k];
+        val = elem.toLowerCase();
+        for(var r = 1; r<nbLineBef; r++) {
           for(var f = 0; f<values[r][0].length; f++) {
             if(!searching(r,0,f)) {
               continue;
             }
             if(found(r,i,j,k)==-1) {
-              return;
+              return -1;
             }
             perInt[i].push(perRef[r]);
             stop = true;
@@ -307,30 +253,29 @@ function onEdit(e) {
           }
         }
         if(!stop) {
-          data[i][2].push(acc+attNames[j-4].length);
-          attNames[j-4].push(val);
-          attributes.push(1);
+          if(perRef[i]!=-1) {
+            values[i][j].splice(k,1);
+            sugg(i,j);
+            return -1;
+          }
+          for(var r = 0; r<attNames[j-4].length; r++) {
+            if(attNames[j-4][r].toLowerCase()==val) {
+              data[i][2].push(acc+r);
+              attributes[acc+r]++;
+              stop = true;
+              break;
+            }
+          }
+          if(!stop) {
+            data[i][2].push(acc+attNames[j-4].length);
+            attNames[j-4].push(val);
+            attributes.push(1);
+          }
         }
         stop = false;
       }
     }
     acc += attNames[j-4].length;
-  }
-  updatePer();
-  for(var i = 1; i<nbLineBef; i++) {
-    if(perRef[i]!=-1 && values[i][colNumb-1].length!=0) {
-      suggSet(i,colNumb-1,[]);
-      return -1;
-    }
-    for(var j = 0; j<perInt[i].length; j++) {
-      if(data[i]==0) {
-        data[periods[perRef[i]][1]][1].push(periods[perInt[i][j]][1]);
-        data[periods[perInt[i][j]][2]][1].push(periods[perRef[i]][2]);
-      } else {
-        data[i][1].push(periods[perInt[i][j]][1]);
-        data[periods[perInt[i][j]][2]][1].push(i);
-      }
-    }
   }
   for(var i = 1; i<nbLineBef; i++) {
     for(var j = 1; j<4; j++) {
@@ -371,9 +316,20 @@ function onEdit(e) {
           if(found(r,i,j,k)==-1) {
             return;
           }
-          updatePer();
         }
         perIntCont[i][j-1].push([r,stat]);
+      }
+    }
+  }
+  updatePer();
+  for(var i = 1; i<nbLineBef; i++) {
+    for(var j = 0; j<perInt[i].length; j++) {
+      if(data[i]==0) {
+        data[periods[perRef[i]][1]][1].push(periods[perInt[i][j]][1]);
+        data[periods[perInt[i][j]][2]][1].push(periods[perRef[i]][2]);
+      } else {
+        data[i][1].push(periods[perInt[i][j]][1]);
+        data[periods[perInt[i][j]][2]][1].push(i);
       }
     }
   }
@@ -443,7 +399,7 @@ function onEdit(e) {
     while(j!==-1) {
       dataAgg[lenAgg].lines.push(j);
       for(var k = 0; k<data[j][2].length; k++) {
-        for(var h = 0; h<dataAgg[lenAgg].attr; h++) {
+        for(var h = 0; h<dataAgg[lenAgg].attr.length; h++) {
           if(dataAgg[lenAgg].attr[h][0] == data[j][2][k]) {
             dataAgg[lenAgg].attr[h][2] = mediaNb+1;
             dataAgg[lenAgg].attr[h][3]++;
@@ -453,6 +409,7 @@ function onEdit(e) {
           }
         }
         if(!stop) {
+          h = dataAgg[lenAgg].attr.length;
           dataAgg[lenAgg].attr.push([data[j][2][k], mediaNb, mediaNb+1, 1, mediaNb]);
         }
         if(dataAgg[lenAgg].attr[h][3] == attributes[data[j][2][k]]) {
@@ -557,15 +514,6 @@ function onEdit(e) {
         var back = 0;
         var hasUnvisitedNeighbor = 0;
         const current = stack[stack.length - 1];
-        if(path.includes(74) && path.includes(75)) {
-          console.log("hey");
-        }
-        if(path.includes(74)) {
-          console.log("hey");
-        }
-        if(path.includes(75)) {
-          console.log("hey");
-        }
         if(path.length!=0 && path[path.length-1]==current) {
           back = 1;
         } else {
@@ -681,32 +629,82 @@ function onEdit(e) {
   exitAllways();
 }
 
-function addPerCond(r,i,j,k) {
+function found(r,i,j,k) {
   if(perRef[r] == -1) {
     values[i][j].splice(k,1);
     sugg(i,j);
     return -1;
   }
-  let b = perRef[r] == -2;
-  if(b) {
+  if(perRef[r] == -2) {
     perRef[r] = periods.length;
-    periods.push([-1,-1,-1,[]]);
-    periods[perRef[r]][stat] = r;
+    periods.push([-1,-1,-1,values[r][0].filter(
+      (e)=>e.startsWith(perNot[stat2])).map(
+        (e)=>e.slice(perNot[stat2].length))]);
+    periods[perRef[r]][stat2] = r;
   }
-  return b;
+  if(j==0) {
+    periods[perRef[r]][stat] = i;
+    periods[perRef[r]][3] = periods[perRef[r]][3].concat(values[i][0].filter(
+      (e)=>e.startsWith(perNot[stat])).map(
+        (e)=>e.slice(perNot[stat].length)).filter(
+          (e)=>!periods[perRef[r]][3].map((e)=>e.toLowerCase()).includes(e.toLowerCase())));
+    perRef[i] = perRef[r];
+  }
+  if(i!=r) {
+    values[i][j][k] = perNot[stat] + elem2;
+  }
+  return 1;
 }
 
-function found(r,i,j,k) {
-  var perIsTwo = addPerCond(r,i,j,k);
-  if(perIsTwo==-1) {
-    return -1;
+function updatePer() {
+  for(var i = perLen; i<periods.length; i++) {
+    for(var q = 1; q<3; q++) {
+      if(periods[i][q] != -1) {
+        continue;
+      }
+      periods[i][q] = values.length;
+      values.push([]);
+      for (let i = 0; i < colNumb; i++) {
+        values[values.length-1].push([]);
+      }
+      for(var m = 0; m<periods[i][3].length; m++) {
+        values[values.length-1][0].push(perNot[q]+periods[i][3][m]);
+      }
+      perInt.push([]);
+      data.push([true,[],[],-1]);
+    }
+    for(var q = 1; q<3; q++) {
+      values[periods[i][q]][0] = periods[i][3].map((e)=>perNot[q] + e).concat(
+        values[periods[i][q]][0].filter((e)=>!e.startsWith(perNot[q])));
+    }
+
+    //fill start and end with the info on the declaration line
+    var z = periods[i][1];
+    var s = periods[i][2];
+    data[s][1].push(z);
+    var c = periods[i][0];
+    if(c == -1) {
+      continue;
+    }
+    for(var q = 1; q<3; q++) {
+      for(var m = 0; m<values[c][q].length; m++) {
+        values[z][q].push(values[c][q][m]);
+      }
+    }
+    for(var m = 0; m<values[c][3].length; m++) {
+      values[s][3].push(values[c][3][m]);
+    }
+    for(let m = 1; m<3; m++) {
+      for(let j = 4; j<colNumb; j++) {
+        for(let k = 0; k<values[c][j].length; k++) {
+          if(!values[periods[i][m]][j].map((e)=>e.toLowerCase()).includes(values[c][j][k].toLowerCase())) {
+            values[periods[i][m]][j].push(values[c][j][k]);
+          }
+        }
+      }
+    }
   }
-  if(perIsTwo && stat2==0) {
-    periods[periods.length-1][3] = values[r][0].filter(
-      (e)=>e.startsWith(perNot[stat2])).map(
-        (e)=>e.slice(perNot[stat2].length));
-  }
-  values[i][j][k] = perNot[stat] + elem2;
+  perLen = periods.length;
 }
 
 function isTip(i,j,k) {
@@ -731,9 +729,9 @@ function isTip(i,j,k) {
 function searching(r,d,f) {
   elem2 = values[r][d][f];
   val2 = elem2.toLowerCase();
-  var stop = true;
+  let stop2 = true;
   if(val2!=val) {
-    stop = false;
+    stop2 = false;
     for(var q = 1; q<3; q++) {
       if(values[r][d][f].startsWith(perNot[q])) {
         elem2 = values[r][d][f].slice(perNot[q].length).trim();
@@ -746,7 +744,7 @@ function searching(r,d,f) {
     }
   }
   stat2 = 0;
-  return stop;
+  return stop2;
 }
 
 function sugg(i,j) {
@@ -809,61 +807,6 @@ function putSugg(i,k) {
   sugg(i,0);
 }
 
-function updatePer() {
-  for(var i = perLen; i<periods.length; i++) {
-    for(var q = 1; q<3; q++) {
-      if(periods[i][q] != -1) {
-        continue;
-      }
-      periods[i][q] = values.length;
-      values.push([]);
-      for (let i = 0; i < colNumb; i++) {
-        values[values.length-1].push([]);
-      }
-      for(var m = 0; m<periods[i][3].length; m++) {
-        values[values.length-1][0].push(perNot[q]+periods[i][3][m]);
-      }
-      perInt.push([]);
-      data.push([true,[],[],-1]);
-    }
-    var z = periods[i][1];
-    var s = periods[i][2];
-    data[s][1].push(z);
-    var c = periods[i][0];
-    if(c == -1) {
-      continue;
-    }
-    for(var q = 1; q<3; q++) {
-      for(var m = 0; m<values[c][q].length; m++) {
-        values[z][q].push(values[c][q][m]);
-      }
-    }
-    if(values[6][1] == "dance idols intro") {
-      console.log('!');
-    }
-    for(var m = 0; m<values[c][3].length; m++) {
-      values[s][3].push(values[c][3][m]);
-    }
-    if(values[6][1] == "dance idols intro") {
-      console.log('!');
-    }
-    for(let m = 1; m<3; m++) {
-      for(let j = 4; j<colNumb; j++) {
-        for(let k = 0; k<values[c][j].length; k++) {
-          if(!values[periods[i][m]][j].includes(values[c][j][k])) {
-            values[periods[i][m]][j].push(values[c][j][k]);
-          }
-        }
-      }
-    }
-    if(values[6][1] == "dance idols intro") {
-      console.log('!');
-    }
-    data[c] = 0;
-  }
-  perLen = periods.length;
-}
-
 function correct() {
   for(var i = 1; i<nbLineBef; i++) {
     for(var j = 0; j<colNumb; j++) {
@@ -899,7 +842,6 @@ function dataGenerator() {
         } else {
           return cell;
         }}).slice(0,colNumb+1).join('\t')).join('\n');
-    console.log(values.length);
     for(var i = 5; i<nbLine0; i++) {
       if(values0[i][colNumb].length!=0 && i!=nbLineBef+9) {
         sheet.getRange(i+1,colNumb+1).clear();

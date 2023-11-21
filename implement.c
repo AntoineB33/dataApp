@@ -16,9 +16,8 @@
 #include <signal.h>
 
 
-
 char* askFile() {
-    char* name;
+    char* name = NULL;
     char** files = NULL;
     DIR *dir;
     size_t size = 0;
@@ -45,6 +44,7 @@ char* askFile() {
         printf("No data found.");
         return NULL;
     }
+    char* token;
     while(1) {
         if (getline(&name, &size, stdin) == -1) {
             printf("Error reading input");
@@ -107,6 +107,7 @@ int txtSize;
 FILE* file;
 char* filePATH;
 size_t len;
+
 
 void* sortTable(void* id) {
     intptr_t threadId = (intptr_t)id;
