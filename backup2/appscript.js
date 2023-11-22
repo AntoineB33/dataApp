@@ -204,6 +204,8 @@ function onEdit(e) {
               stat>0 && (perRef[i]>-1 && perRef[r]>-1 && perRef[i]!=perRef[r] && periods[perRef[r]][stat]>-1 ||
                 perRef[i]<0 && perRef[r]>-1 && (periods[perRef[r]][stat]>-1 || stat2==0))) {
             elem = values[r][0][f];
+            console.log(stat>0, perRef[i]>-1 && perRef[r]>-1 && perRef[i]!=perRef[r] && periods[perRef[r]][stat]>-1, 
+                perRef[i]<0 && perRef[r]>-1 && (periods[perRef[r]][stat]>-1 || stat2==0))
             putSugg(i,k);
             return -1;
           }
@@ -226,7 +228,6 @@ function onEdit(e) {
       stop = false;
     }
   }
-  updatePer();
   var attNames = [];
   attributes = [];
   var acc = 0;
@@ -318,13 +319,68 @@ function onEdit(e) {
           }
         }
         perIntCont[i][j-1].push([r,stat]);
+        values[i][j][k] = perNot[stat] + elem2;
       }
     }
   }
-  updatePer();
+  for(var i = 0; i<periods.length; i++) {
+    for(var q = 1; q<3; q++) {
+      if(periods[i][q] != -1) {
+        continue;
+      }
+      periods[i][q] = values.length;
+      values.push([]);
+      for (let i = 0; i < colNumb; i++) {
+        values[values.length-1].push([]);
+      }
+      for(var m = 0; m<periods[i][3].length; m++) {
+        values[values.length-1][0].push(perNot[q]+periods[i][3][m]);
+      }
+      data.push([true,[],[],-1]);
+    }
+    for(var q = 1; q<3; q++) {
+      values[periods[i][q]][0] = periods[i][3].map((e)=>perNot[q] + e).concat(
+        values[periods[i][q]][0].filter((e)=>!e.startsWith(perNot[q])));
+    }
+
+    //fill start and end with the info on the declaration line
+    var z = periods[i][1];
+    var s = periods[i][2];
+    data[s][1].push(z);
+    var c = periods[i][0];
+    data[z][0] = false;
+    data[c][3] = z;
+    if(c == -1) {
+      values.push([]);
+      for (let i = 0; i < colNumb; i++) {
+        values[values.length-1].push([]);
+      }
+      for(var m = 0; m<periods[i][3].length; m++) {
+        values[values.length-1][0].push(periods[i][3][m]);
+      }
+      continue;
+    }
+    /*for(var q = 1; q<3; q++) {
+      for(var m = 0; m<values[c][q].length; m++) {
+        values[z][q].push(values[c][q][m]);
+      }
+    }
+    for(var m = 0; m<values[c][3].length; m++) {
+      values[s][3].push(values[c][3][m]);
+    }
+    for(let m = 1; m<3; m++) {
+      for(let j = 4; j<colNumb; j++) {
+        for(let k = 0; k<values[c][j].length; k++) {
+          if(!values[periods[i][m]][j].map((e)=>e.toLowerCase()).includes(values[c][j][k].toLowerCase())) {
+            values[periods[i][m]][j].push(values[c][j][k]);
+          }
+        }
+      }
+    }*/
+  }
   for(var i = 1; i<nbLineBef; i++) {
     for(var j = 0; j<perInt[i].length; j++) {
-      if(data[i]==0) {
+      if(perRef[i]>-1) {
         data[periods[perRef[i]][1]][1].push(periods[perInt[i][j]][1]);
         data[periods[perInt[i][j]][2]][1].push(periods[perRef[i]][2]);
       } else {
@@ -339,14 +395,15 @@ function onEdit(e) {
         var u = perIntCont[i][j][k];
         r = u[0];
         var e = r;
-        var is = i;
         var ie = i;
         if(perRef[i]>-1) {
-          is = periods[perRef[i]];
-          ie = is[2];
-          is = is[1];
+          if(i==periods[perRef[i]][1]) {
+            i = periods[perRef[i]][0];
+          } else if(i==periods[perRef[i]][0]) {
+            ie = periods[perRef[i]][2];
+          }
         }
-        if(perRef[r]>-1) {
+        if(perRef[r]>-1 && r==periods[perRef[r]][0]) {
           r = periods[perRef[r]];
           e = r[2];
           r = r[1];
@@ -357,15 +414,15 @@ function onEdit(e) {
           r = e;
         }
         if(j==0) {
-          if(!data[is][0]) {
-            values[is][1].splice(1, values[is][1].length-1);
-            sugg(is,1);
+          if(!data[i][0]) {
+            values[i][1].splice(1, values[i][1].length-1);
+            sugg(i,1);
             return -1;
           }
-          data[e][3] = is;
-          data[is][0] = false;
+          data[e][3] = i;
+          data[i][0] = false;
         } else if(j==1) {
-          data[is][1].push(e);
+          data[i][1].push(e);
         } else {
           data[r][1].push(ie);
         }
@@ -654,57 +711,6 @@ function found(r,i,j,k) {
     values[i][j][k] = perNot[stat] + elem2;
   }
   return 1;
-}
-
-function updatePer() {
-  for(var i = perLen; i<periods.length; i++) {
-    for(var q = 1; q<3; q++) {
-      if(periods[i][q] != -1) {
-        continue;
-      }
-      periods[i][q] = values.length;
-      values.push([]);
-      for (let i = 0; i < colNumb; i++) {
-        values[values.length-1].push([]);
-      }
-      for(var m = 0; m<periods[i][3].length; m++) {
-        values[values.length-1][0].push(perNot[q]+periods[i][3][m]);
-      }
-      perInt.push([]);
-      data.push([true,[],[],-1]);
-    }
-    for(var q = 1; q<3; q++) {
-      values[periods[i][q]][0] = periods[i][3].map((e)=>perNot[q] + e).concat(
-        values[periods[i][q]][0].filter((e)=>!e.startsWith(perNot[q])));
-    }
-
-    //fill start and end with the info on the declaration line
-    var z = periods[i][1];
-    var s = periods[i][2];
-    data[s][1].push(z);
-    var c = periods[i][0];
-    if(c == -1) {
-      continue;
-    }
-    for(var q = 1; q<3; q++) {
-      for(var m = 0; m<values[c][q].length; m++) {
-        values[z][q].push(values[c][q][m]);
-      }
-    }
-    for(var m = 0; m<values[c][3].length; m++) {
-      values[s][3].push(values[c][3][m]);
-    }
-    for(let m = 1; m<3; m++) {
-      for(let j = 4; j<colNumb; j++) {
-        for(let k = 0; k<values[c][j].length; k++) {
-          if(!values[periods[i][m]][j].map((e)=>e.toLowerCase()).includes(values[c][j][k].toLowerCase())) {
-            values[periods[i][m]][j].push(values[c][j][k]);
-          }
-        }
-      }
-    }
-  }
-  perLen = periods.length;
 }
 
 function isTip(i,j,k) {

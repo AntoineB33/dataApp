@@ -6,72 +6,200 @@ dataSpreadSheet	123	174	46	dance_Feuille 1
 
 2
 1,1
-2,58
+2,89
 0,0,1	23,0,1
 3
 1,1
-58
+89
 1,0,1	24,0,1
+4,107
+0,0
+1
+
 7
 1,1
-4,59
+5,90
 3,0,1	26,0,1
 8
 1,1
-59
+90
 4,0,1	27,0,1
+11,161,12
+1,1
+7,116
+2,0,1	29,0,1
+13,137,14
+1,1
+26
+2,0,1
+15,117,46
+1,1
+9,10,28,35,37,38,42,44,47
+2,0,1	30,0,1
+16,163,17
+1,1
+117
+5,0,1	6,0,1
+18,119
+1,0
+11,21
+
+19,121
+1,0
+12
+
 20
 1,1
-70
+96
 7,0,1
+21,111
+0,0
+14,90
+
+22,123
+1,0
+15
+
+23,125
+1,0
+16
+
+24,129
+1,0
+18
+
 25
 1,0
-76
+99
+
+26,127
+1,0
+17,20
+
+27,131
+0,0
+20,101
 
 28
 2,1
-76,80
+99,101
 8,0,1
+29,133
+1,0
+22,23,25
+
 30
 1,0
-82
+102
 
+31,135
+1,0
+24
+
+32,165,33
+1,1
+118
+9,0,1	30,0,1
+34,167,35
+1,1
+119
+10,0,1
 36
 1,1
-63,86
+27,104
 2,0,1
+37,115,38
+1,1
+30,33
+2,0,1	31,0,1
+39,139
+1,0
+29
+
 40
 1,1
-88
+105
 5,0,1	6,0,1	32,0,1
 41
 1,1
-64,65
+8,93
 2,0,1
+42,141
+0,0
+32,39,106
+
+43,143
+1,0
+34,107
+
+44,145
+1,0
+34
+
 45
 2,1
-92,94
+107,108
 3,0,1
+47,147
+1,0
+36,41,109
+
 48
 3,1
-96,98
+109,110
 2,0,1	33,0,1
 49
 1,1
-66
+94
 2,0,1
+50,149
+1,0
+36,46,110
+
+51,153
+2,0
+40
+
+52,171,64
+2,1
+121
+3,0,1
+53,151,54
+1,1
+40,109,111
+2,0,1	34,0,1
+55,155
+1,0
+43
+
 56
 1,1
-104
+113
 2,0,1	35,0,1
+57,157
+1,0
+45
+
 58
 1,1
-106
+114
 2,0,1
 59
 2,1
-13
+36
 2,0,1
+60,159,61
+1,1
+48
+2,0,1	36,0,1
+62,169,63
+1,1
+120
+2,0,1
+65,173,66,67
+1,2
+122
+2,0,2	37,0,1
 68
 0,1
 
@@ -228,269 +356,141 @@ dataSpreadSheet	123	174	46	dance_Feuille 1
 0,1
 
 13,0,1
-107
-0,0
-1
-
-108,109,6
+108,5,109,6
 2,1
-3
+4
 2,0,1	25,0,1
-110,113,10
+110,9,113,10
 3,1
-109
+6
 2,0,1	28,0,1
-111
-0,0
-59,71
-
 112
 2,0
 
 
 114
 1,0
-61
+91
 
-115,38
-1,1
-11,93
-2,0,1	31,0,1
 116
 3,0
-86
+104
 
-117,46
-1,1
-14,67,87,95,97,103,105,107,111
-2,0,1	30,0,1
 118
 10,0
-64
-
-119
-1,0
-69,81
+93
 
 120
 2,0
-66
-
-121
-1,0
-5
+94
 
 122
 1,0
-68
-
-123
-1,0
-73
+95
 
 124
 1,0
-61
-
-125
-1,0
-77
+91
 
 126
 1,0
-72
-
-127
-1,0
-6,7
+97
 
 128
 2,0
-78
-
-129
-1,0
-75
+100
 
 130
 1,0
-74
-
-131
-0,0
-7,80
+98
 
 132
 2,0
 
 
-133
-1,0
-8,83,115
-
 134
 3,0
-68
-
-135
-1,0
-113
+95
 
 136
 1,0
-82
+102
 
-137,14
-1,1
-9
-2,0,1
 138
 2,0
 
 
-139
-1,0
-10
-
 140
 1,0
-66
-
-141
-0,0
-90,91,101
+94
 
 142
 2,0
 
 
-143
-1,0
-12,92
-
 144
 2,0
-101
-
-145
-1,0
-12
+39
 
 146
 1,0
-64
-
-147
-1,0
-13,96,99
+93
 
 148
 3,0
-66
-
-149
-1,0
-13,17,98
+94
 
 150
 2,0
-66,121
+49,94
 
-151,54
-1,1
-96,100,119
-2,0,1	34,0,1
 152
 2,0
-66
-
-153
-2,0
-119
+94
 
 154
 1,0
-90
-
-155
-1,0
-15
+106
 
 156
 1,0
-66
-
-157
-1,0
-16
+94
 
 158
 1,0
-17
+46
 
-159,61
-1,1
-117
-2,0,1	36,0,1
 160
 1,0
-66
+94
 
-161,12
-1,1
-85,110
-2,0,1	29,0,1
 162
 1,0
-62
+92
 
-163,17
-1,1
-112
-5,0,1	6,0,1
 164
 1,0
-66
+94
 
-165,33
-1,1
-114
-9,0,1	30,0,1
 166
 1,0
-84
+103
 
-167,35
-1,1
-116
-10,0,1
 168
 1,0
-82
+102
 
-169,63
-1,1
-118
-2,0,1
 170
 1,0
-108
+115
 
-171,64
-2,1
-120
-3,0,1
 172
 1,0
-100,102
+111,112
 
-173,66,67
-1,2
-122
-2,0,2	37,0,1
 174
 1,0
-66
+94
 
 names	following	after	before	characters	musics	era	url	result
 								
@@ -601,72 +601,72 @@ miku jail				miku			https://ecchi.iwara.tv/videos/kmb4zhbkzdiqm4jbb?language=en
 haku excuse me service				haku			https://ecchi.iwara.tv/videos/oky3kh4a2s1aea4e	
 start:dance intro							
 end:dance intro							
-start:dance idols intro	dance intro						
+start:dance idols intro							
 end:dance idols intro							
 start:underwear in clip							
 end:underwear in clip							
-start:miku strips	dance idols intro					underwear in clip	
-end:miku strips						underwear in clip	
-start:miku happy to be naked		miku time stop strip				miku fully strips	
-end:miku happy to be naked						miku fully strips	
-start:miku sex		miku strip cabaret				miku happy to be naked	
-end:miku sex						miku happy to be naked	
-start:gangbang						miku sex	
-end:gangbang						miku sex	
-start:loli gangbang						gangbang	
-end:loli gangbang						gangbang	
-start:nude in clip						underwear in clip	
-end:nude in clip						underwear in clip	
-start:sex in clip						nude in clip	
-end:sex in clip						nude in clip	
-start:bukkake photoshoot						sex in public	
-end:bukkake photoshoot						sex in public	
-start:sex in public						sex in clip	
-end:sex in public						sex in clip	
+start:miku strips							
+end:miku strips							
+start:miku happy to be naked							
+end:miku happy to be naked							
+start:miku sex							
+end:miku sex							
+start:gangbang							
+end:gangbang							
+start:loli gangbang							
+end:loli gangbang							
+start:nude in clip							
+end:nude in clip							
+start:sex in clip							
+end:sex in clip							
+start:bukkake photoshoot							
+end:bukkake photoshoot							
+start:sex in public							
+end:sex in public							
 start:akari sex							
 end:akari sex							
-start:services						gangbang	
-end:services						gangbang	
-start:loli services						services	
-end:loli services						services	
-start:miku fully strips		miku string dance					
+start:services							
+end:services							
+start:loli services							
+end:loli services							
+start:miku fully strips							
 end:miku fully strips							
-start:mirai akari happy to be naked						miku sex	
-end:mirai akari happy to be naked						miku sex	
+start:mirai akari happy to be naked							
+end:mirai akari happy to be naked							
 start:rin naked							
 end:rin naked							
-start:rin embarassed to be naked						rin naked	
-end:rin embarassed to be naked						rin naked	
-start:miku happy to make her friend naked						miku happy to be naked	
-end:miku happy to make her friend naked						miku happy to be naked	
-start:miku sex empty street						miku sex	
-end:miku sex empty street						miku sex	
-start:only miku has sex						miku sex	
-end:only miku has sex						miku sex	
-start:len sex						miku sex	
-end:len sex						miku sex	
-start:rin happy to be naked		rin embarassed to be naked				rin naked	
-end:rin happy to be naked						rin naked	
-start:miku full time service						miku sex	
-end:miku full time service						miku sex	
-start:miku ashamed of sex						miku sex	
-end:miku ashamed of sex						miku sex	
-start:miku raped public						miku sex	
-end:miku raped public						miku sex	
-start:miku full bikini		miku strip sexy				miku strips	
-end:miku full bikini						miku strips	
-start:KM sex on stage						miku sex	
-end:KM sex on stage						miku sex	
-start:loli services society						loli services	
-end:loli services society						loli services	
-start:murasame services						services	
-end:murasame services						services	
-start:miku photoshoot sex						miku raped public	
-end:miku photoshoot sex						miku raped public	
-start:rin sex						len sex; rin happy to be naked	
-end:rin sex						len sex; rin happy to be naked	
-start:miku and her friends sex		only miku has sex				miku sex	
-end:miku and her friends sex						miku sex	
+start:rin embarassed to be naked							
+end:rin embarassed to be naked							
+start:miku happy to make her friend naked							
+end:miku happy to make her friend naked							
+start:miku sex empty street							
+end:miku sex empty street							
+start:only miku has sex							
+end:only miku has sex							
+start:len sex							
+end:len sex							
+start:rin happy to be naked							
+end:rin happy to be naked							
+start:miku full time service							
+end:miku full time service							
+start:miku ashamed of sex							
+end:miku ashamed of sex							
+start:miku raped public							
+end:miku raped public							
+start:miku full bikini							
+end:miku full bikini							
+start:KM sex on stage							
+end:KM sex on stage							
+start:loli services society							
+end:loli services society							
+start:murasame services							
+end:murasame services							
+start:miku photoshoot sex							
+end:miku photoshoot sex							
+start:rin sex							
+end:rin sex							
+start:miku and her friends sex							
+end:miku and her friends sex							
 
 result.txt
 Affichage de result.txt

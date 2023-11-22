@@ -310,6 +310,7 @@ void* sortTable(void* id) {
 
 
 void* userInterr() {
+    printf("Press q to stop the sorting.\n");
     if (getline(&filePATH, &len, stdin) == -1) {
         printf("Error reading input");
         return NULL;
@@ -437,14 +438,10 @@ int initSort(char *argv) {
     numCores = 1;
     threads = malloc((numCores+1) * sizeof(pthread_t));
     lvl = 0;
-    printf("Listening0...\n");
-    //txtSize = lenAgg * (2+log10(lenAgg));
     txtSize = 1000;
     filePATH = realloc(filePATH, strlen(filePATH) + 7);
     sprintf(filePATH, "data/%s_sorted.txt", argv);
     txt = malloc(txtSize*lenAgg);
-    printf("Listening00...\n");
-    // sortTable(0);
     for(int i = 0; i<numCores; i++) {
         intptr_t arg = (intptr_t)i;
         if(pthread_create(&threads[i], NULL, sortTable, (void*)arg)!=0) {
@@ -456,7 +453,6 @@ int initSort(char *argv) {
         printf("Error creating thread for user input.\n");
         return -1;
     }
-    printf("Listening...\n");
     for(int i = 0; i<numCores; i++) {
         if (pthread_join(threads[i], NULL) != 0) {
             printf("pthread_join");
