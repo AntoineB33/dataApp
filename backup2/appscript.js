@@ -23,9 +23,8 @@ var values0;
 var lenAgg;
 var attributes;
 var dataAgg;
-var nbLine0;
 
-function onEdit(e) {
+function onEdit2(e) {
   prevLine = parseInt(PropertiesService.getScriptProperties().getProperty("prevLine"));
   sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   range = sheet.getDataRange();
@@ -93,79 +92,91 @@ function onEdit(e) {
   //Get the list of the references of images
   if(values[0].length>=colNumb+2) {
     let imgRef = []
-    let maxRef = 0;
-    let notMatching = false;
+    let maxRef = -1;
     let moveImg = 0;
+    let called = [];
     for(let i = 1; i<nbLineBef; i++) {
       let int = parseInt(values[i][colNumb+1]);
-      if(!isNaN(int)) {
-        sheet.getRange(i+1, colNumb+2).clear();
-        imgRef.push([i,int]);
-        moveImg = 1;
-        if(int>maxRef) {
-          maxRef = int;
-        }
-      } else if (values[i][colNumb+1]){
-        notMatching = true;
-      }
-    }
-    if(moveImg && !notMatching) {
-      let isCalled = [];
-      for(let i = 0; i<maxRef; i++) {
-        isCalled.push(0);
-      }
-      for(let i = 0; i<imgRef.length; i++) {
-        if(isCalled[i]) {
-          notMatching = true;
+      if(isNaN(int)) {
+        if(values0[i][colNumb+1] || !isNaN(int) && (int<0 || int<maxRef && called[int])) {
+          moveImg = 0;
           break;
         }
-        isCalled[i] = 1;
+        if(values0[i][colNumb] == "CellImage") {
+          moveImg = 1;
+        }
+      } else {
+        imgRef.push([i,int]);
+        if(int>maxRef) {
+          for(let i = maxRef; i<int; i++) {
+            called.push(0);
+          }
+          maxRef = int;
+        }
+        if(int!=imgRef.length) {
+          moveImg = 1;
+        }
+        if(values0[i][colNumb] != "CellImage") {
+          moveImg = 1;
+        }
+        called[int] = 1;
       }
-      if(!notMatching && !isCalled.includes(1)) {
-        let img = [];
-        for(let i = 1; i<nbLineBef; i++) {
-          if(values[i][colNumb]) {
-            let sourceCell = sheet.getRange(i+1, colNumb+1);
-            if(values[i][colNumb]!="CellImage") {
-              sourceCell.clear();
-              continue;
-            }
-            let inlineImages = sourceCell.getRichTextValue().getInlineImages();
-            if(inlineImages.length==0) {
-              sourceCell.clear();
-              continue;
-            }
-            img.push([i,inlineImages[0]]);
-            if(img.length>imgRef.length) {
-              break;
-            }
+    }
+    if(moveImg && imgRef.length==maxRef+1) {
+      let img = [];
+      for(let i = 1; i<nbLineBef; i++) {
+        if(values[i][colNumb].length) {
+          let sourceCell = sheet.getRange(i+1, colNumb+1);
+          if(values[i][colNumb][0]!="CellImage") {
+            sourceCell.clear();
+            continue;
+          }
+          let inlineImages2 = sheet.getRange(i+1, colNumb).getRichTextValue();
+          let yei = inlineImages2.getLinkUrl();
+          let inlineImages = sourceCell.getRichTextValue().getInlineImages();
+          if(inlineImages.length==0) {
+            sourceCell.clear();
+            continue;
+          }
+          img.push([i,inlineImages[0]]);
+          if(img.length>imgRef.length) {
+            break;
           }
         }
-        if(img.length==imgRef.length) {
-          let j = 0;
-          let g = 0;
-          for(let i = 1; i<nbLineBef; i++) {
-            if(imgRef[j][0]==i) {
-              if(img[g][0]==i) {
-                if(imgRef[j][1]!=g) {
-                  sheet.getRange(i+1, colNumb+2).setRichTextValue(SpreadsheetApp.newRichTextValue().setInlineImage(img[imgRef[j][0]][1]).build());
-                }
-                g++;
-              } else {
+      }
+      if(img.length==imgRef.length) {
+        let j = 0;
+        let g = 0;
+        for(let i = 1; i<nbLineBef; i++) {
+          if(imgRef[j][0]==i) {
+            if(img[g][0]==i) {
+              if(imgRef[j][1]!=g) {
                 sheet.getRange(i+1, colNumb+2).setRichTextValue(SpreadsheetApp.newRichTextValue().setInlineImage(img[imgRef[j][0]][1]).build());
               }
-              i++;
-            } else if(img[g][0]==i) {
-              sheet.getRange(i+1, colNumb+2).setRichTextValue(SpreadsheetApp.newRichTextValue().setInlineImage([]).build());
               g++;
+            } else {
+              sheet.getRange(i+1, colNumb+2).setRichTextValue(SpreadsheetApp.newRichTextValue().setInlineImage(img[imgRef[j][0]][1]).build());
             }
+            i++;
+          } else if(img[g][0]==i) {
+            sheet.getRange(i+1, colNumb+2).setRichTextValue(SpreadsheetApp.newRichTextValue().setInlineImage([]).build());
+            g++;
           }
         }
       }
     }
   }
 
-  nbLine0 = nbLineBef;
+  //clean columns for images
+  for(var i = 4; i<nbLineBef; i++) {
+    if(values[i][colNumb].length!=0 && values[i][colNumb][0]!="CellImage") {
+      sheet.getRange(i+1,colNumb+1).clear();
+    }
+    if(values[i][colNumb+1].length!=0) {
+      sheet.getRange(i+1,colNumb+2).clear();
+    }
+  }
+
   for(var i = nbLineBef-1; i>0; i--) {
     if(values[i].some((v,j)=>v.length!=0 && j<colNumb)) {
       break;
@@ -202,10 +213,8 @@ function onEdit(e) {
           if(i==r || stat==0 && (perRef[r]<0 || perRef[i]>-1 && (perRef[i]!=perRef[r] || periods[perRef[r]][0]!=i) ||
                 perRef[i]<0 && periods[perRef[r]][0]>-1 || stat2==0) ||
               stat>0 && (perRef[i]>-1 && perRef[r]>-1 && perRef[i]!=perRef[r] && periods[perRef[r]][stat]>-1 ||
-                perRef[i]<0 && perRef[r]>-1 && (periods[perRef[r]][stat]>-1 || stat2==0))) {
+                perRef[i]<0 && perRef[r]>-1 && periods[perRef[r]][stat]>-1)) {
             elem = values[r][0][f];
-            console.log(stat>0, perRef[i]>-1 && perRef[r]>-1 && perRef[i]!=perRef[r] && periods[perRef[r]][stat]>-1, 
-                perRef[i]<0 && perRef[r]>-1 && (periods[perRef[r]][stat]>-1 || stat2==0))
             putSugg(i,k);
             return -1;
           }
@@ -663,7 +672,13 @@ function onEdit(e) {
       sheet.getRange(i+1,colNumb+1).setFontColor('#ffffff');
     }
   }
-  if(colors[3][colNumb]!="#ffffff") {
+  if(colors[3][colNumb]=="#ffffff") {
+    for(var i = 4; i<nbLineBef; i++) {
+      if(colors[i][colNumb]!="#ffffff") {
+        sheet.getRange(i+1,colNumb+1).setBackground('#ffffff');
+      }
+    }
+  } else {
     sheet.getRange(4,colNumb+1,colors.length+10,1).setBackground("#ffffff");
     sheet.getRange(4,colNumb+1).setValue("");
   }
@@ -848,11 +863,6 @@ function dataGenerator() {
         } else {
           return cell;
         }}).slice(0,colNumb+1).join('\t')).join('\n');
-    for(var i = 5; i<nbLine0; i++) {
-      if(values0[i][colNumb].length!=0 && i!=nbLineBef+9) {
-        sheet.getRange(i+1,colNumb+1).clear();
-      }
-    }
     //sheet.getRange(nbLineBef+10,colNumb + 1).setValue(result);
     file.setContent(result);
   }
