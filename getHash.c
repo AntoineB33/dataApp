@@ -1,97 +1,99 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <openssl/evp.h>
-#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <math.h>
+#include <limits.h>
+#include <pthread.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <sys/file.h>
+#include <dirent.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <dirent.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdbool.h>
+#include <math.h>
+#include <limits.h>
+#include <pthread.h>
+#include <fcntl.h>
+#include <sys/file.h>
+#include <signal.h>
+
+#include <openssl/evp.h>
+
+#define MAX_HASH_STRING_LENGTH (2 * EVP_MAX_MD_SIZE + 1)
 
 
-FILE* clipboard;
-char* firstLine = NULL;
-
-
-void freeVar(void *var) {
-    if(var != NULL) {
-        free(var);
-    }
-}
-
-void freeList(char **var, int len) {
-    if(var != NULL) {
-        for(int i = 0; i<len; i++) {
-            free(var[i]);
-        }
-        free(var);
-    }
-}
-
-void freeAll(char* msg) {
-    freeVar(firstLine);
-    fprintf(stderr, "%s\n", msg);
-    exit(0);
-}
-
-void hash_url(const char *url, unsigned char *hash) {
+char *sha256(const char *str) {
     EVP_MD_CTX *mdctx;
     const EVP_MD *md;
     unsigned int md_len;
+    unsigned char md_value[EVP_MAX_MD_SIZE];
+    static char hash_string[MAX_HASH_STRING_LENGTH]; // Static allocation for simplicity
 
     OpenSSL_add_all_digests();
-    md = EVP_sha256();
+
+    md = EVP_get_digestbyname("sha256");
+
     mdctx = EVP_MD_CTX_new();
     EVP_DigestInit_ex(mdctx, md, NULL);
-    EVP_DigestUpdate(mdctx, url, strlen(url));
-    EVP_DigestFinal_ex(mdctx, hash, &md_len);
+    EVP_DigestUpdate(mdctx, str, strlen(str));
+    EVP_DigestFinal_ex(mdctx, md_value, &md_len);
     EVP_MD_CTX_free(mdctx);
+
+    EVP_cleanup();
+
+    // Convert the hash bytes to a string representation
+    for (unsigned int i = 0; i < md_len; i++)
+        sprintf(&hash_string[i * 2], "%02x", md_value[i]);
+
+    hash_string[2 * md_len] = '\0'; // Null-terminate the string
+
+    return hash_string;
 }
 
 int main() {
-
-
+    char* command;
+    char* firstLine;
+    char* url;
+    DIR *dir;
 
     size_t size = 0;
-    clipboard = popen("powershell.exe Get-Clipboard", "r");
+    FILE *clipboard = popen("powershell.exe Get-Clipboard", "r");
     if (clipboard == NULL) {
         pclose(clipboard);
-        freeAll("Failed to open clipboard.\n");
+        printf("Failed to open clipboard.\n");
+        return -1;
     }
-    if (getline(&firstLine, &size, clipboard) == -1) {
+    if (getline(&url, &size, clipboard) == -1) {
         pclose(clipboard);
-        freeAll("Error reading clipboard.\n");
+        printf("Error reading clipboard.\n");
+        return -1;
     }
     pclose(clipboard);
-    printf("%s\n", firstLine);
-
-    
-    unsigned char hash[EVP_MAX_MD_SIZE];
-    hash_url(firstLine, hash);
-
-    // Store the hash in a variable
-    char storedHash[EVP_MAX_MD_SIZE * 2 + 1];  // Twice the size for hexadecimal representation + 1 for null terminator
-
-    for (unsigned int i = 0; i < EVP_MD_size(EVP_sha256()); i++) {
-        sprintf(storedHash + 2 * i, "%02x", hash[i]);
+    // url = strtok(firstLine, "\n");
+    char* prefix = "https";
+    if(strncmp(url, prefix, strlen(prefix)) != 0) {
+        printf("Not starting with %s.\n",prefix);
+        getline(&url, &size, stdin);
+        return -1;
     }
-    printf("%s\n", storedHash);
-
+    url[strlen(url)-2] = '\0';
+    char *hash = sha256(url);
     
     clipboard = popen("clip.exe", "w");
     if (clipboard == NULL) {
-        freeAll("Error opening clipboard");
+        printf("Error opening clipboard");
+        return -1;
     }
-
-    // Write the text to the clipboard
-    fprintf(clipboard, "%s", storedHash);
-
-    // Close the pipe
-    if (pclose(clipboard) != 0) {
-        freeAll("Error closing clipboard");
-    }
-    
-
-    freeAll("Success");
+    // return 1;
+    fprintf(clipboard, "%s", hash);
+    pclose(clipboard);
 }

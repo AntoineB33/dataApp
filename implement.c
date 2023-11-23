@@ -16,14 +16,16 @@
 #include <signal.h>
 
 
-char* askFile() {
+char* askFile(char* path0) {
     char* name = NULL;
     char** files = NULL;
     DIR *dir;
     size_t size = 0;
     int count = 0;
     struct dirent *ent;
-    if ((dir = opendir ("data/")) != NULL) {
+    char* path = malloc(strlen(path0) + 10);
+    sprintf(path, "%s/data/", path0);
+    if ((dir = opendir (path)) != NULL) {
         while ((ent = readdir (dir)) != NULL) {
             if (ent->d_type == DT_REG) {
                 if (strstr(ent->d_name, ".txt") != NULL && strstr(ent->d_name, "_sorted.txt") == NULL) {
@@ -64,28 +66,6 @@ char* askFile() {
     return name;
 }
 
-
-
-void sha256(const char *str, unsigned char hash[EVP_MAX_MD_SIZE]) {
-    EVP_MD_CTX *mdctx;
-    const EVP_MD *md;
-    unsigned char md_value[EVP_MAX_MD_SIZE];
-    unsigned int md_len, i;
-
-    OpenSSL_add_all_digests();
-
-    md = EVP_get_digestbyname("sha256");
-
-    mdctx = EVP_MD_CTX_new();
-    EVP_DigestInit_ex(mdctx, md, NULL);
-    EVP_DigestUpdate(mdctx, str, strlen(str));
-    EVP_DigestFinal_ex(mdctx, md_value, &md_len);
-    EVP_MD_CTX_free(mdctx);
-
-    for(i = 0; i < md_len; i++)
-        sprintf(&hash[i*2], "%02x", md_value[i]);
-}
-
 int lenAgg;
 int attNb;
 treeCons* trees;
@@ -96,6 +76,7 @@ int error;
 int space;
 int loner;
 int lvl;
+pthread_rwlock_t newRoot = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t checkM = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t fileM = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t errorM = PTHREAD_RWLOCK_INITIALIZER;
@@ -108,6 +89,161 @@ FILE* file;
 char* filePATH;
 size_t len;
 
+
+int sorter(int i, int lenAggP, int imm, int n, int* res, int* spaces, int* loners, int* errori, int back, attribute* attributesI, int errorP, int lonerP, bool newSort, int* cal, int* u, int xc, bool compar, int k, attrProp* y, int q, treeCons* po, int c) {
+    while(i>lvl && i<lenAggP) {
+        if(back==0) {
+            res[i] = 0;
+        } else {
+            po = &trees[res[i]];
+            for(int k = 0; k<po->attrPSize; k++) {
+                q = po->attrP[k].attr;
+                attributesI[q].last = attributesI[q].prevLast;
+                attributesI[q].rest = attributesI[q].prevRest;
+            }
+            if(back==2) {
+                imm--;
+                n-=trees[res[i]].mediaSize;
+                trees[res[i]].afters--;
+                for(int k = 0; k<trees[res[i]].befSize; k++) {
+                    trees[res[i]].before[k]->afters++;
+                }
+            }
+            res[i]++;
+        }
+        while(res[i]<lenAgg && trees[res[i]].afters) {
+            res[i]++;
+        }
+        if(res[i]==lenAgg) {
+            back = 2;
+            i--;
+            continue;
+        }
+        errori[i] = errori[imm];
+        spaces[i] = spaces[imm];
+        loners[i] = loners[imm];
+        for(int k = 0; k<trees[res[i]].attrPSize; k++) {
+            y = &trees[res[i]].attrP[k];
+            q = y->attr;
+            attributesI[q].prevLast = attributesI[q].last;
+            attributesI[q].prevRest = attributesI[q].rest;
+            if(attributesI[q].last<0) {
+                if(attributesI[q].last==-1) {
+                    errori[i] += n+y->posInt;
+                    attributesI[q].last = n+y->posOut;
+                } else {
+                    c = attributesI[q].dist-n;
+                    if(c>0) {
+                        loners[i] += c;
+                    } else if(c<0) {
+                        loners[i] -= c;
+                        if(attributesI[q].rest>0) {
+                            loners[i] += c-1;
+                        } else {
+                            loners[i] += c;
+                        }
+                    }
+                }
+            } else {
+                c = attributesI[q].dist-n+attributesI[q].last-y->posInt;
+                if(c>0) {
+                    if(attributesI[q].rest>0) {
+                        errori[i] += c-1;
+                        attributesI[q].rest--;
+                    } else {
+                        errori[i] += c;
+                    }
+                } else {
+                    spaces[i]-=c;
+                }
+                attributesI[q].last = n+y->posOut;
+            }
+        }
+        pthread_rwlock_rdlock(&errorM);
+        errorP = error;
+        pthread_rwlock_unlock(&errorM);
+        if(errori[i]>errorP) {
+            back = 1;
+            continue;
+        }
+        if(errori[i]==errorP) {
+            pthread_rwlock_rdlock(&lonerM);
+            lonerP = loner;
+            pthread_rwlock_unlock(&lonerM);
+            if(loners[i]>=lonerP) {
+                back = 1;
+                continue;
+            }
+        }
+        trees[res[i]].afters++;
+        for(int k = 0; k<trees[res[i]].befSize; k++) {
+            trees[res[i]].before[k]->afters--;
+        }
+        n+=trees[res[i]].mediaSize;
+        i++;
+        imm++;
+        back = 0;
+    }
+    if(i==lvl) {
+        return 1;
+    }
+    i--;
+    pthread_rwlock_rdlock(&checkM);
+    pthread_rwlock_rdlock(&errorWM);
+    if(errori[i]<error) {
+        pthread_rwlock_wrlock(&errorM);
+        error = errori[i];
+        pthread_rwlock_unlock(&errorM);
+        pthread_rwlock_wrlock(&lonerM);
+        loner = loners[i];
+        pthread_rwlock_unlock(&lonerM);
+        pthread_rwlock_unlock(&errorWM);
+        back = 2;
+    } else {
+        if (errori[i]==error) {
+            pthread_rwlock_unlock(&errorWM);
+            pthread_rwlock_rdlock(&lonerWM);
+            if(loners[i]<loner) {
+                pthread_rwlock_wrlock(&lonerM);
+                loner = loners[i];
+                pthread_rwlock_unlock(&lonerM);
+                pthread_rwlock_unlock(&lonerWM);
+                back = 1;
+            } else {
+                pthread_rwlock_unlock(&lonerWM);
+                back = 0;
+            }
+        } else {
+            pthread_rwlock_unlock(&errorWM);
+        }
+    }
+    if(back) {
+        pthread_rwlock_rdlock(&fileM);
+        pthread_rwlock_unlock(&checkM);
+        txt[0] = '\0';
+        for(int j = 1; j<lenAggP; j++) {
+            sprintf(txt, "%s%d,", txt, res[j]);
+        }
+        file = fopen(filePATH, "w");
+        if (file == NULL) {
+            printf("Failed to open the output file.\n");
+            return -1;
+        }
+        int fileNo = fileno(file);
+        if (flock(fileNo, LOCK_EX) == -1) {
+            printf("Failed to obtain lock");
+            return -1;
+        }
+        txt[strlen(txt)-1] = '\0';
+        fprintf(file, "%s", txt);
+        flock(fileNo, LOCK_UN);
+        fclose(file);
+        pthread_rwlock_unlock(&fileM);
+    } else{
+        pthread_rwlock_unlock(&checkM);
+    }
+    back = 2;
+}
 
 void* sortTable(void* id) {
     intptr_t threadId = (intptr_t)id;
@@ -128,8 +264,8 @@ void* sortTable(void* id) {
     for(int j = 0; j<attNb; j++) {
         attributesI[j] = attributes[j];
     }
-    int i;  // ith node to place
-    int imm;    // i-1
+    int i = 1;  // ith node to place
+    int imm = 0;    // i-1
     int n;  // nth medium
     int c;
     bool loop = true;
@@ -143,14 +279,116 @@ void* sortTable(void* id) {
     int errorP;
     int lonerP;
     bool newSort = false;
-
-
-
     while(1) {
+        pthread_rwlock_rdlock(&checkM);
+        while(1) {
+            while(i>0 && i<=lvl) {
+                if(back==0) {
+                    res[i] = 0;
+                } else {
+                    po = &trees[res[i]];
+                    for(int k = 0; k<po->attrPSize; k++) {
+                        q = po->attrP[k].attr;
+                        attributesI[q].last = attributesI[q].prevLast;
+                        attributesI[q].rest = attributesI[q].prevRest;
+                    }
+                    if(back==2) {
+                        imm--;
+                        n-=trees[res[i]].mediaSize;
+                        trees[res[i]].afters--;
+                        for(int k = 0; k<trees[res[i]].befSize; k++) {
+                            trees[res[i]].before[k]->afters++;
+                        }
+                    }
+                    res[i]++;
+                }
+                while(res[i]<lenAgg && trees[res[i]].afters) {
+                    res[i]++;
+                }
+                if(res[i]==lenAgg) {
+                    back = 2;
+                    i--;
+                    continue;
+                }
+                errori[i] = errori[imm];
+                spaces[i] = spaces[imm];
+                loners[i] = loners[imm];
+                for(int k = 0; k<trees[res[i]].attrPSize; k++) {
+                    y = &trees[res[i]].attrP[k];
+                    q = y->attr;
+                    attributesI[q].prevLast = attributesI[q].last;
+                    attributesI[q].prevRest = attributesI[q].rest;
+                    if(attributesI[q].last<0) {
+                        if(attributesI[q].last==-1) {
+                            errori[i] += n+y->posInt;
+                            attributesI[q].last = n+y->posOut;
+                        } else {
+                            c = attributesI[q].dist-n;
+                            if(c>0) {
+                                loners[i] += c;
+                            } else if(c<0) {
+                                loners[i] -= c;
+                                if(attributesI[q].rest>0) {
+                                    loners[i] += c-1;
+                                } else {
+                                    loners[i] += c;
+                                }
+                            }
+                        }
+                    } else {
+                        c = attributesI[q].dist-n+attributesI[q].last-y->posInt;
+                        if(c>0) {
+                            if(attributesI[q].rest>0) {
+                                errori[i] += c-1;
+                                attributesI[q].rest--;
+                            } else {
+                                errori[i] += c;
+                            }
+                        } else {
+                            spaces[i]-=c;
+                        }
+                        attributesI[q].last = n+y->posOut;
+                    }
+                }
+                pthread_rwlock_rdlock(&errorM);
+                errorP = error;
+                pthread_rwlock_unlock(&errorM);
+                if(errori[i]>errorP) {
+                    back = 1;
+                    continue;
+                }
+                if(errori[i]==errorP) {
+                    pthread_rwlock_rdlock(&lonerM);
+                    lonerP = loner;
+                    pthread_rwlock_unlock(&lonerM);
+                    if(loners[i]>=lonerP) {
+                        back = 1;
+                        continue;
+                    }
+                }
+                trees[res[i]].afters++;
+                for(int k = 0; k<trees[res[i]].befSize; k++) {
+                    trees[res[i]].before[k]->afters--;
+                }
+                n+=trees[res[i]].mediaSize;
+                i++;
+                imm++;
+                back = 0;
+            }
+            if(i==0) {
+                return except;
+            }
+            i--;
+            back = 2;
+        }
+        pthread_rwlock_unlock(&checkM);
         i = 1;
         imm = i-1;
         n = 0;
         while (1) {
+            // if(sorter(i,lenAggP, imm, n, res, spaces, loners, errori, back, attributesI, errorP, lonerP, newSort, cal, u, xc, compar, k, y, q, po, c) == -1) {
+            //     return except;
+            // }
             while(i>lvl && i<lenAggP) {
                 if(back==0) {
                     res[i] = 0;
@@ -323,7 +561,6 @@ void* userInterr() {
 }
 
 int initSort(char *argv) {
-    printf("Starting...\n");
 
     error = INT_MAX;
     space = 0;

@@ -9,5 +9,5 @@
 #include <sys/wait.h>
 
 int main() {
-    initSort(askFile());
+    initSort(askFile(""));
 }

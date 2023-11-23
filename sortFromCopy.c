@@ -61,7 +61,7 @@ int main() {
         }
     }
     if(!dataInClip) {
-        name = askFile();
+        name = askFile("");
         if(name==NULL) {
             printf("Failed to get file name.\n");
             return -1;

@@ -30,7 +30,7 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 "${file}",
-                "implement.c",
+                "/mnt/c/Users/comma/Documents/health/news_underground/mediaSorter/dataApp/implement.c",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}",
                 "-lssl",
@@ -55,7 +55,10 @@
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${fileDirname}/${fileBasenameNoExtension}",
+                "-lssl",
+                "-lcrypto",
+                "-pthread"
             ],
             "options": {
                 "cwd": "${fileDirname}"

@@ -40,7 +40,6 @@ typedef struct {
 // Function prototypes
 void* sortTable(void* id);
 int initSort(char *argv);
-char* askFile();
-void sha256(const char *str, unsigned char hash[EVP_MAX_MD_SIZE]);
+char* askFile(char* path);
 
 #endif

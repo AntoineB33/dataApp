@@ -18,7 +18,7 @@ char* sortedExtention = "_sorted";
 int main() {
 
     
-    char* name = askFile();
+    char* name = askFile("");
     if(name == NULL) {
         return -1;
     }
