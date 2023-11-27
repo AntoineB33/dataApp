@@ -24,7 +24,7 @@ char* askFile(char* path0) {
     int count = 0;
     struct dirent *ent;
     char* path = malloc(strlen(path0) + 10);
-    sprintf(path, "%s/data/", path0);
+    sprintf(path, "%sdata/", path0);
     if ((dir = opendir (path)) != NULL) {
         while ((ent = readdir (dir)) != NULL) {
             if (ent->d_type == DT_REG) {
@@ -68,9 +68,9 @@ char* askFile(char* path0) {
 
 int lenAgg;
 int attNb;
-treeCons* trees;
+treeCons* trees0;
 char** output;
-char* txt;
+char* txt2;
 attribute* attributes;
 int error;
 int space;
@@ -84,172 +84,21 @@ pthread_rwlock_t lonerM = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t errorWM = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t lonerWM = PTHREAD_RWLOCK_INITIALIZER;
 pthread_t *threads;
-int txtSize;
 FILE* file;
 char* filePATH;
 size_t len;
+int lastThRoot;
 
-
-int sorter(int i, int lenAggP, int imm, int n, int* res, int* spaces, int* loners, int* errori, int back, attribute* attributesI, int errorP, int lonerP, bool newSort, int* cal, int* u, int xc, bool compar, int k, attrProp* y, int q, treeCons* po, int c) {
-    while(i>lvl && i<lenAggP) {
-        if(back==0) {
-            res[i] = 0;
-        } else {
-            po = &trees[res[i]];
-            for(int k = 0; k<po->attrPSize; k++) {
-                q = po->attrP[k].attr;
-                attributesI[q].last = attributesI[q].prevLast;
-                attributesI[q].rest = attributesI[q].prevRest;
-            }
-            if(back==2) {
-                imm--;
-                n-=trees[res[i]].mediaSize;
-                trees[res[i]].afters--;
-                for(int k = 0; k<trees[res[i]].befSize; k++) {
-                    trees[res[i]].before[k]->afters++;
-                }
-            }
-            res[i]++;
-        }
-        while(res[i]<lenAgg && trees[res[i]].afters) {
-            res[i]++;
-        }
-        if(res[i]==lenAgg) {
-            back = 2;
-            i--;
-            continue;
-        }
-        errori[i] = errori[imm];
-        spaces[i] = spaces[imm];
-        loners[i] = loners[imm];
-        for(int k = 0; k<trees[res[i]].attrPSize; k++) {
-            y = &trees[res[i]].attrP[k];
-            q = y->attr;
-            attributesI[q].prevLast = attributesI[q].last;
-            attributesI[q].prevRest = attributesI[q].rest;
-            if(attributesI[q].last<0) {
-                if(attributesI[q].last==-1) {
-                    errori[i] += n+y->posInt;
-                    attributesI[q].last = n+y->posOut;
-                } else {
-                    c = attributesI[q].dist-n;
-                    if(c>0) {
-                        loners[i] += c;
-                    } else if(c<0) {
-                        loners[i] -= c;
-                        if(attributesI[q].rest>0) {
-                            loners[i] += c-1;
-                        } else {
-                            loners[i] += c;
-                        }
-                    }
-                }
-            } else {
-                c = attributesI[q].dist-n+attributesI[q].last-y->posInt;
-                if(c>0) {
-                    if(attributesI[q].rest>0) {
-                        errori[i] += c-1;
-                        attributesI[q].rest--;
-                    } else {
-                        errori[i] += c;
-                    }
-                } else {
-                    spaces[i]-=c;
-                }
-                attributesI[q].last = n+y->posOut;
-            }
-        }
-        pthread_rwlock_rdlock(&errorM);
-        errorP = error;
-        pthread_rwlock_unlock(&errorM);
-        if(errori[i]>errorP) {
-            back = 1;
-            continue;
-        }
-        if(errori[i]==errorP) {
-            pthread_rwlock_rdlock(&lonerM);
-            lonerP = loner;
-            pthread_rwlock_unlock(&lonerM);
-            if(loners[i]>=lonerP) {
-                back = 1;
-                continue;
-            }
-        }
-        trees[res[i]].afters++;
-        for(int k = 0; k<trees[res[i]].befSize; k++) {
-            trees[res[i]].before[k]->afters--;
-        }
-        n+=trees[res[i]].mediaSize;
-        i++;
-        imm++;
-        back = 0;
-    }
-    if(i==lvl) {
-        return 1;
-    }
-    i--;
-    pthread_rwlock_rdlock(&checkM);
-    pthread_rwlock_rdlock(&errorWM);
-    if(errori[i]<error) {
-        pthread_rwlock_wrlock(&errorM);
-        error = errori[i];
-        pthread_rwlock_unlock(&errorM);
-        pthread_rwlock_wrlock(&lonerM);
-        loner = loners[i];
-        pthread_rwlock_unlock(&lonerM);
-        pthread_rwlock_unlock(&errorWM);
-        back = 2;
-    } else {
-        if (errori[i]==error) {
-            pthread_rwlock_unlock(&errorWM);
-            pthread_rwlock_rdlock(&lonerWM);
-            if(loners[i]<loner) {
-                pthread_rwlock_wrlock(&lonerM);
-                loner = loners[i];
-                pthread_rwlock_unlock(&lonerM);
-                pthread_rwlock_unlock(&lonerWM);
-                back = 1;
-            } else {
-                pthread_rwlock_unlock(&lonerWM);
-                back = 0;
-            }
-        } else {
-            pthread_rwlock_unlock(&errorWM);
-        }
-    }
-    if(back) {
-        pthread_rwlock_rdlock(&fileM);
-        pthread_rwlock_unlock(&checkM);
-        txt[0] = '\0';
-        for(int j = 1; j<lenAggP; j++) {
-            sprintf(txt, "%s%d,", txt, res[j]);
-        }
-        file = fopen(filePATH, "w");
-        if (file == NULL) {
-            printf("Failed to open the output file.\n");
-            return -1;
-        }
-        int fileNo = fileno(file);
-        if (flock(fileNo, LOCK_EX) == -1) {
-            printf("Failed to obtain lock");
-            return -1;
-        }
-        txt[strlen(txt)-1] = '\0';
-        fprintf(file, "%s", txt);
-        flock(fileNo, LOCK_UN);
-        fclose(file);
-        pthread_rwlock_unlock(&fileM);
-    } else{
-        pthread_rwlock_unlock(&checkM);
-    }
-    back = 2;
-}
 
 void* sortTable(void* id) {
     intptr_t threadId = (intptr_t)id;
     intptr_t exc = -1;
     void* except = (void*)exc;
     int lenAggP = lenAgg+1;
+    treeCons* trees = malloc(lenAgg * sizeof(treeCons));
+    for(int i = 0; i<lenAgg; i++) {
+        trees[i] = trees0[i];
+    }
     int* res = malloc(lenAggP * sizeof(int));
     int* spaces = malloc((lenAggP) * sizeof(int));
     int* loners = malloc((lenAggP) * sizeof(int));
@@ -257,12 +106,13 @@ void* sortTable(void* id) {
     spaces[0] = 0;
     loners[0] = 0;
     errori[0] = 0;
-    int errorF; // copy of error
-    int q;  // qth attribute
     attrProp* y;
+    attribute* attrP;
     attribute* attributesI = malloc(attNb * sizeof(attribute));
     for(int j = 0; j<attNb; j++) {
         attributesI[j] = attributes[j];
+        attributesI[j].prevSt = malloc(attributesI[j].prevSize * sizeof(prevStT));
+        attributesI[j].prevSize = 0;
     }
     int i = 1;  // ith node to place
     int imm = 0;    // i-1
@@ -271,16 +121,13 @@ void* sortTable(void* id) {
     bool loop = true;
     int back = 0;
     treeCons* po;
-    bool compar = false;
-    int k;
-    int xc;
-    int* u;
-    int* cal;
     int errorP;
     int lonerP;
     bool newSort = false;
+    prevStT* prevIP;
+    int lastThRootP = 0;
     while(1) {
-        pthread_rwlock_rdlock(&checkM);
+        pthread_rwlock_wrlock(&newRoot);
         while(1) {
             while(i>0 && i<=lvl) {
                 if(back==0) {
@@ -288,16 +135,19 @@ void* sortTable(void* id) {
                 } else {
                     po = &trees[res[i]];
                     for(int k = 0; k<po->attrPSize; k++) {
-                        q = po->attrP[k].attr;
-                        attributesI[q].last = attributesI[q].prevLast;
-                        attributesI[q].rest = attributesI[q].prevRest;
+                        attrP = &attributesI[po->attrP[k].attr];
+                        if(attrP->last!=-2) {
+                            prevIP = &attrP->prevSt[--attrP->prevSize];
+                            attrP->last = prevIP->prevLast;
+                            attrP->rest = prevIP->prevRest;
+                        }
                     }
                     if(back==2) {
                         imm--;
                         n-=trees[res[i]].mediaSize;
                         trees[res[i]].afters--;
                         for(int k = 0; k<trees[res[i]].befSize; k++) {
-                            trees[res[i]].before[k]->afters++;
+                            trees[trees[res[i]].before[k]].afters++;
                         }
                     }
                     res[i]++;
@@ -315,39 +165,40 @@ void* sortTable(void* id) {
                 loners[i] = loners[imm];
                 for(int k = 0; k<trees[res[i]].attrPSize; k++) {
                     y = &trees[res[i]].attrP[k];
-                    q = y->attr;
-                    attributesI[q].prevLast = attributesI[q].last;
-                    attributesI[q].prevRest = attributesI[q].rest;
-                    if(attributesI[q].last<0) {
-                        if(attributesI[q].last==-1) {
-                            errori[i] += n+y->posInt;
-                            attributesI[q].last = n+y->posOut;
-                        } else {
-                            c = attributesI[q].dist-n;
-                            if(c>0) {
+                    attrP = &attributesI[y->attr];
+                    if(attrP->last==-2) {
+                        c = attrP->dist-n;
+                        if(c>0) {
+                            loners[i] += c;
+                        } else if(c<0) {
+                            loners[i] -= c;
+                            if(attrP->rest>0) {
+                                loners[i] += c-1;
+                            } else {
                                 loners[i] += c;
-                            } else if(c<0) {
-                                loners[i] -= c;
-                                if(attributesI[q].rest>0) {
-                                    loners[i] += c-1;
-                                } else {
-                                    loners[i] += c;
-                                }
                             }
                         }
                     } else {
-                        c = attributesI[q].dist-n+attributesI[q].last-y->posInt;
-                        if(c>0) {
-                            if(attributesI[q].rest>0) {
-                                errori[i] += c-1;
-                                attributesI[q].rest--;
-                            } else {
-                                errori[i] += c;
-                            }
+                        prevIP = &attrP->prevSt[attrP->prevSize++];
+                        prevIP->prevLast = attrP->last;
+                        prevIP->prevRest = attrP->rest;
+                        if(attrP->last==-1) {
+                            errori[i] += n+y->posInt;
+                            attrP->last = n+y->posOut-1;
                         } else {
-                            spaces[i]-=c;
+                            c = attrP->dist-n+attrP->last-y->posInt;
+                            if(c>0) {
+                                if(attrP->rest>0) {
+                                    errori[i] += c-1;
+                                    attrP->rest--;
+                                } else {
+                                    errori[i] += c;
+                                }
+                            } else {
+                                spaces[i]-=c;
+                            }
+                            attrP->last = n+y->posOut-1;
                         }
-                        attributesI[q].last = n+y->posOut;
                     }
                 }
                 pthread_rwlock_rdlock(&errorM);
@@ -368,7 +219,7 @@ void* sortTable(void* id) {
                 }
                 trees[res[i]].afters++;
                 for(int k = 0; k<trees[res[i]].befSize; k++) {
-                    trees[res[i]].before[k]->afters--;
+                    trees[trees[res[i]].before[k]].afters--;
                 }
                 n+=trees[res[i]].mediaSize;
                 i++;
@@ -376,15 +227,19 @@ void* sortTable(void* id) {
                 back = 0;
             }
             if(i==0) {
+                pthread_rwlock_unlock(&newRoot);
                 return except;
             }
+            if(res[imm]>lastThRoot) {
+                break;
+            }
+            lastThRootP++;
             i--;
             back = 2;
         }
-        pthread_rwlock_unlock(&checkM);
-        i = 1;
-        imm = i-1;
-        n = 0;
+        lastThRoot = lastThRootP;
+        printf("lastThRoot:%d %d\n", lastThRoot, threadId);
+        pthread_rwlock_unlock(&newRoot);
         while (1) {
             // if(sorter(i,lenAggP, imm, n, res, spaces, loners, errori, back, attributesI, errorP, lonerP, newSort, cal, u, xc, compar, k, y, q, po, c) == -1) {
             //     return except;
@@ -395,16 +250,19 @@ void* sortTable(void* id) {
                 } else {
                     po = &trees[res[i]];
                     for(int k = 0; k<po->attrPSize; k++) {
-                        q = po->attrP[k].attr;
-                        attributesI[q].last = attributesI[q].prevLast;
-                        attributesI[q].rest = attributesI[q].prevRest;
+                        attrP = &attributesI[po->attrP[k].attr];
+                        if(attrP->last!=-2) {
+                            prevIP = &attrP->prevSt[--attrP->prevSize];
+                            attrP->last = prevIP->prevLast;
+                            attrP->rest = prevIP->prevRest;
+                        }
                     }
                     if(back==2) {
                         imm--;
                         n-=trees[res[i]].mediaSize;
                         trees[res[i]].afters--;
                         for(int k = 0; k<trees[res[i]].befSize; k++) {
-                            trees[res[i]].before[k]->afters++;
+                            trees[trees[res[i]].before[k]].afters++;
                         }
                     }
                     res[i]++;
@@ -422,39 +280,40 @@ void* sortTable(void* id) {
                 loners[i] = loners[imm];
                 for(int k = 0; k<trees[res[i]].attrPSize; k++) {
                     y = &trees[res[i]].attrP[k];
-                    q = y->attr;
-                    attributesI[q].prevLast = attributesI[q].last;
-                    attributesI[q].prevRest = attributesI[q].rest;
-                    if(attributesI[q].last<0) {
-                        if(attributesI[q].last==-1) {
-                            errori[i] += n+y->posInt;
-                            attributesI[q].last = n+y->posOut;
-                        } else {
-                            c = attributesI[q].dist-n;
-                            if(c>0) {
+                    attrP = &attributesI[y->attr];
+                    if(attrP->last==-2) {
+                        c = attrP->dist-n;
+                        if(c>0) {
+                            loners[i] += c;
+                        } else if(c<0) {
+                            loners[i] -= c;
+                            if(attrP->rest>0) {
+                                loners[i] += c-1;
+                            } else {
                                 loners[i] += c;
-                            } else if(c<0) {
-                                loners[i] -= c;
-                                if(attributesI[q].rest>0) {
-                                    loners[i] += c-1;
-                                } else {
-                                    loners[i] += c;
-                                }
                             }
                         }
                     } else {
-                        c = attributesI[q].dist-n+attributesI[q].last-y->posInt;
-                        if(c>0) {
-                            if(attributesI[q].rest>0) {
-                                errori[i] += c-1;
-                                attributesI[q].rest--;
-                            } else {
-                                errori[i] += c;
-                            }
+                        prevIP = &attrP->prevSt[attrP->prevSize++];
+                        prevIP->prevLast = attrP->last;
+                        prevIP->prevRest = attrP->rest;
+                        if(attrP->last==-1) {
+                            errori[i] += n+y->posInt;
+                            attrP->last = n+y->posOut-1;
                         } else {
-                            spaces[i]-=c;
+                            c = attrP->dist-n+attrP->last-y->posInt;
+                            if(c>0) {
+                                if(attrP->rest>0) {
+                                    errori[i] += c-1;
+                                    attrP->rest--;
+                                } else {
+                                    errori[i] += c;
+                                }
+                            } else {
+                                spaces[i]-=c;
+                            }
+                            attrP->last = n+y->posOut-1;
                         }
-                        attributesI[q].last = n+y->posOut;
                     }
                 }
                 pthread_rwlock_rdlock(&errorM);
@@ -475,7 +334,7 @@ void* sortTable(void* id) {
                 }
                 trees[res[i]].afters++;
                 for(int k = 0; k<trees[res[i]].befSize; k++) {
-                    trees[res[i]].before[k]->afters--;
+                    trees[trees[res[i]].before[k]].afters--;
                 }
                 n+=trees[res[i]].mediaSize;
                 i++;
@@ -486,7 +345,7 @@ void* sortTable(void* id) {
                 break;
             }
             i--;
-            pthread_rwlock_rdlock(&checkM);
+            pthread_rwlock_wrlock(&checkM);
             pthread_rwlock_rdlock(&errorWM);
             if(errori[i]<error) {
                 pthread_rwlock_wrlock(&errorM);
@@ -516,12 +375,13 @@ void* sortTable(void* id) {
                 }
             }
             if(back) {
-                pthread_rwlock_rdlock(&fileM);
+                pthread_rwlock_wrlock(&fileM);
                 pthread_rwlock_unlock(&checkM);
-                txt[0] = '\0';
+                sprintf(txt2, "%d %d ", errori[i], loners[i]);
                 for(int j = 1; j<lenAggP; j++) {
-                    sprintf(txt, "%s%d,", txt, res[j]);
+                    sprintf(txt2, "%s%d,", txt2, res[j]);
                 }
+                txt2[strlen(txt2)-1] = '\0';
                 file = fopen(filePATH, "w");
                 if (file == NULL) {
                     printf("Failed to open the output file.\n");
@@ -532,8 +392,7 @@ void* sortTable(void* id) {
                     printf("Failed to obtain lock");
                     return except;
                 }
-                txt[strlen(txt)-1] = '\0';
-                fprintf(file, "%s", txt);
+                fprintf(file, "%s", txt2);
                 flock(fileNo, LOCK_UN);
                 fclose(file);
                 pthread_rwlock_unlock(&fileM);
@@ -542,7 +401,6 @@ void* sortTable(void* id) {
             }
             back = 2;
         }
-        break;
     }
 }
 
@@ -583,7 +441,7 @@ int initSort(char *argv) {
     }
     
     
-    char* line;
+    char* line = NULL;
     len = 0;
     getline(&line, &len, file);
     if(line[0]=='"') {
@@ -596,28 +454,40 @@ int initSort(char *argv) {
     int lenVal = atoi(token);
     token = strtok(NULL, "\t");
     attNb = atoi(token);
+    token = strtok(NULL, "\t");
+    if(strcmp(token, "NaN")!=0) {
+        error = atoi(token);
+    }
+    token = strtok(NULL, "\t");
+    if(strcmp(token, "NaN")!=0) {
+        loner = atoi(token);
+    }
     getline(&line, &len, file);
-    //char* te = "hey,hier,hoi2";
-    //line = strdup(te);
+    int number[2] = {0,0};
     attributes = malloc(attNb * sizeof(attribute));
     token = strtok(line, ",");
     for(int i = 0; i<attNb; i++) {
-        attributes[i].dist = atoi(token);
+        attributes[i].prevSize = atoi(token);
+        if(attributes[i].prevSize>0) {
+            number[1]+=attributes[i].prevSize;
+        } else {
+            number[2]++;
+        }
         token = strtok(NULL, ",");
     }
     int count;
-    trees = malloc(lenAgg * sizeof(treeCons));
+    trees0 = malloc(lenAgg * sizeof(treeCons));
     int** precRef = malloc(lenAgg * sizeof(int*));
     int mediaNb = 0;
     for(int i = 0; i<lenAgg; i++) {
-        trees[i].id = i;
+        trees0[i].id = i;
         getline(&line, &len, file);
         getline(&line, &len, file);
         token = strtok(line, ",");
-        trees[i].afters = atoi(token);
+        trees0[i].afters = atoi(token);
         token = strtok(NULL, ",");
-        trees[i].mediaSize = atoi(token);
-        mediaNb += trees[i].mediaSize;
+        trees0[i].mediaSize = atoi(token);
+        mediaNb += trees0[i].mediaSize;
 
         getline(&line, &len, file);
         count = 0;
@@ -628,30 +498,31 @@ int initSort(char *argv) {
             token = strtok(NULL, ",");
             count++;
         }
-        trees[i].befSize = count;
+        trees0[i].befSize = count;
 
         getline(&line, &len, file);
-        trees[i].attrP = malloc(attNb * sizeof(attrProp));
+        trees0[i].attrP = malloc(attNb * sizeof(attrProp));
         count = 0;
         token = strtok(line, ",");
         while(token!=NULL && token[0] != '\r') {
-            trees[i].attrP[count].attr = atoi(token);
+            trees0[i].attrP[count].attr = atoi(token);
             token = strtok(NULL, ",");
-            trees[i].attrP[count].posInt = atoi(token);
+            trees0[i].attrP[count].posInt = atoi(token);
             token = strtok(NULL, "\t");
-            trees[i].attrP[count].posOut = atoi(token);
+            trees0[i].attrP[count].posOut = atoi(token);
             token = strtok(NULL, ",");
             count++;
         }
-        trees[i].attrPSize = count;
-        trees[i].attrP = realloc(trees[i].attrP, count * sizeof(attrProp));
+        trees0[i].attrPSize = count;
+        trees0[i].attrP = realloc(trees0[i].attrP, count * sizeof(attrProp));
     }
     flock(filNo, LOCK_UN);
     fclose(file);
+    printf("afters:%d\n",trees0[0].afters);
     for(int i = 0; i<lenAgg; i++) {
-        trees[i].before = malloc(trees[i].befSize * sizeof(treeCons*));
-        for(int j = 0; j<trees[i].befSize; j++) {
-            trees[i].before[j] = &trees[precRef[i][j]];
+        trees0[i].before = malloc(trees0[i].befSize * sizeof(treeCons*));
+        for(int j = 0; j<trees0[i].befSize; j++) {
+            trees0[i].before[j] = precRef[i][j];
         }
     }
     for(int i = 0; i<lenAgg; i++) {
@@ -659,26 +530,212 @@ int initSort(char *argv) {
     }
     free(precRef);
     for(int i = 0; i<attNb; i++) {
-        if(attributes[i].dist <= 0) {
+        if(attributes[i].prevSize <= 0) {
             attributes[i].last = -2;
-            attributes[i].dist = (mediaNb-1)/2-attributes[i].dist;
+            attributes[i].dist = (mediaNb-1)/2-attributes[i].prevSize; // here dist is the opposite of the distance to the barycenter in the aggreg
             attributes[i].rest = (mediaNb-1)%2;
         } else {
             attributes[i].last = -1;
-            attributes[i].dist = mediaNb/(attributes[i].dist-1);
-            attributes[i].rest = mediaNb%(attributes[i].dist-1);
+            attributes[i].rest = (mediaNb-1)%(attributes[i].prevSize-1);
+            attributes[i].dist = (mediaNb-1)/(attributes[i].prevSize-1);
         }
-        attributes[i].prevLast = attributes[i].last;
-        attributes[i].prevRest = attributes[i].rest;
     }
     int numCores = sysconf(_SC_NPROCESSORS_ONLN);
-    numCores = 1;
+    // numCores = 1;
     threads = malloc((numCores+1) * sizeof(pthread_t));
     lvl = 0;
-    txtSize = 1000;
-    filePATH = realloc(filePATH, strlen(filePATH) + 7);
+    char* estim = malloc(100);
+
+    filePATH = realloc(filePATH, strlen(filePATH) + 20);
     sprintf(filePATH, "data/%s_sorted.txt", argv);
-    txt = malloc(txtSize*lenAgg);
+
+
+    
+    
+    int lenAggP = lenAgg+1;
+    treeCons* trees = malloc(lenAgg * sizeof(treeCons));
+    for(int i = 0; i<lenAgg; i++) {
+        trees[i] = trees0[i];
+    }
+    int* res = malloc(lenAggP * sizeof(int));
+    int* spaces = malloc((lenAggP) * sizeof(int));
+    int* loners = malloc((lenAggP) * sizeof(int));
+    int* errori = malloc((lenAggP) * sizeof(int));
+    spaces[0] = 0;
+    loners[0] = 0;
+    errori[0] = 0;
+    int q;  // qth attribute
+    attrProp* y;
+    attribute* attrP;
+    attribute* attributesI = malloc(attNb * sizeof(attribute));
+    for(int j = 0; j<attNb; j++) {
+        attributesI[j] = attributes[j];
+        attributesI[j].prevSt = malloc(attributesI[j].prevSize * sizeof(prevStT));
+        attributesI[j].prevSize = 0;
+    }
+    int i = 1;  // ith node to place
+    int imm = 0;    // i-1
+    int n = 0;  // nth medium
+    int c = 0;
+    bool loop = true;
+    int back = 0;
+    treeCons* po;
+    int lonerP;
+    bool newSort = false;
+    lvl = 1;
+    int nbLeaves = 0;
+    int nbLeavesi = 0;
+    prevStT* prevIP;
+    while(1) {
+        while(i>0 && i<=lvl) {
+            if(back==0) {
+                res[i] = 0;
+            } else {
+                po = &trees[res[i]];
+                for(int k = 0; k<po->attrPSize; k++) {
+                    attrP = &attributesI[po->attrP[k].attr];
+                    if(attrP->last!=-2) {
+                        prevIP = &attrP->prevSt[--attrP->prevSize];
+                        attrP->last = prevIP->prevLast;
+                        attrP->rest = prevIP->prevRest;
+                    }
+                }
+                if(back==2) {
+                    imm--;
+                    n-=trees[res[i]].mediaSize;
+                    trees[res[i]].afters--;
+                    for(int k = 0; k<trees[res[i]].befSize; k++) {
+                        trees[trees[res[i]].before[k]].afters++;
+                    }
+                }
+                res[i]++;
+            }
+            while(res[i]<lenAgg && trees[res[i]].afters) {
+                res[i]++;
+            }
+            if(res[i]==lenAgg) {
+                back = 2;
+                i--;
+                continue;
+            }
+            errori[i] = errori[imm];
+            spaces[i] = spaces[imm];
+            loners[i] = loners[imm];
+            for(int k = 0; k<trees[res[i]].attrPSize; k++) {
+                y = &trees[res[i]].attrP[k];
+                attrP = &attributesI[y->attr];
+                if(attrP->last==-2) {
+                    c = attrP->dist-n;
+                    if(c>0) {
+                        loners[i] += c;
+                    } else if(c<0) {
+                        loners[i] -= c;
+                        if(attrP->rest>0) {
+                            loners[i] += c-1;
+                        } else {
+                            loners[i] += c;
+                        }
+                    }
+                } else {
+                    prevIP = &attrP->prevSt[attrP->prevSize++];
+                    prevIP->prevLast = attrP->last;
+                    prevIP->prevRest = attrP->rest;
+                    if(attrP->last==-1) {
+                        errori[i] += n+y->posInt;
+                        attrP->last = n+y->posOut-1;
+                    } else {
+                        c = attrP->dist-n+attrP->last-y->posInt;
+                        if(c>0) {
+                            if(attrP->rest>0) {
+                                errori[i] += c-1;
+                                attrP->rest--;
+                            } else {
+                                errori[i] += c;
+                            }
+                        } else {
+                            spaces[i]-=c;
+                        }
+                        attrP->last = n+y->posOut-1;
+                    }
+                }
+            }
+            if(errori[i]>error) {
+                back = 1;
+                continue;
+            }
+            if(errori[i]==error) {
+                if(loners[i]>=loner) {
+                    back = 1;
+                    continue;
+                }
+            }
+            trees[res[i]].afters++;
+            for(int k = 0; k<trees[res[i]].befSize; k++) {
+                trees[trees[res[i]].before[k]].afters--;
+            }
+            n+=trees[res[i]].mediaSize;
+            i++;
+            imm++;
+            back = 0;
+        }
+        if(i==0) {
+            if(lenAgg==lvl) {
+                numCores = nbLeavesi;
+                if(lenAgg==0) {
+                    numCores = 1;
+                }
+                break;
+            }
+            nbLeavesi = nbLeaves;
+            nbLeaves = 0;
+            lvl++;
+        }
+        nbLeaves++;
+        if(nbLeaves==numCores) {
+            break;
+        }
+        back = 2;
+    }
+    free(res);
+    free(spaces);
+    free(loners);
+    free(errori);
+    free(trees);
+    lastThRoot = -1;
+    printf("lvl:%d\n", lvl);
+
+    int txtSize = 0;
+    int length = 1;  // Length of the current digit range (starting from 1 digit)
+    int multiplier = 9;  // Multiplier for the number of digits in the current range
+    n = lenAgg;
+    if(n==0) {
+        txtSize = 1;
+    } else {
+        while (n > 0) {
+            // Calculate the number of digits contributed by the current digit range
+            txtSize += (n < multiplier) ? n * length : multiplier * length;
+            n -= multiplier;
+            length++;
+            multiplier *= 10;  // Increase the multiplier for the next digit range
+        }
+        txtSize*=2;
+    }
+    for(int i = 0; i<2; i++) {
+        length = 0;
+        number[i] *= lenVal;
+        // If the number is zero, it has one digit
+        if (number[i] == 0) {
+            length++;
+        } else {
+            while (number[i] != 0) {
+                length++;
+                number[i] /= 10;
+            }
+        }
+        txtSize += length*2+1;
+    }
+    txt2 = malloc(txtSize);
+    
     for(int i = 0; i<numCores; i++) {
         intptr_t arg = (intptr_t)i;
         if(pthread_create(&threads[i], NULL, sortTable, (void*)arg)!=0) {
@@ -697,3 +754,9 @@ int initSort(char *argv) {
         }
     }
 }
+
+
+
+// int main() {
+//     initSort(askFile(""));
+// }

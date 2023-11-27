@@ -112,7 +112,6 @@ int main() {
         }
         txtSize += strlen(output[i]);
     }
-    txt = realloc(txt, txtSize);
 
     filePATH = realloc(filePATH, strlen(filePATH) + strlen(sortedExtention) + 1);
     sprintf(filePATH, "%s%s%s.txt", dataPATH, name, sortedExtention);
@@ -134,9 +133,17 @@ int main() {
     }
     flock(fileNo, LOCK_UN);
     fclose(file);
+    token = strtok(line, " ");
+    char* error = malloc(strlen(token)+1);
+    strcpy(error, token);
+    token = strtok(line, " ");
+    char* loner = malloc(strlen(token)+1);
+    strcpy(loner, token);
     token = strtok(line, ",");
     count = 0;
     int yh = 0;
+    txtSize += strlen(error) + strlen(loner) + 2;
+    txt = realloc(txt, txtSize);
     while(token!=NULL && token[0] != '\r') {
         int i = atoi(token);
         if(i>=lenAgg) {
@@ -144,6 +151,14 @@ int main() {
             return -1;
         }
         strcat(txt, output[i]);
+        if(count<2) {
+            txt[strlen(txt)-2] = '\0';
+            if(count==0) {
+                sprintf(txt,"%s\t\t%s\r\n", txt, error);
+            } else {
+                sprintf(txt,"%s\t\t%s\r\n", txt, loner);
+            }
+        }
         token = strtok(NULL, ",");
         count++;
         yh = i;

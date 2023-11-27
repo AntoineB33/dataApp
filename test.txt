@@ -1,3 +1,4 @@
-cd84b0f8624570d5d892d74400f543ab27a78f42130e839c7ac56654499f20bc
-b945881b33c7b3a239639691e43285c051f220e99e02ea713e3f7a4e0e7d07ca
-cd84b0f8624570d5d892d74400f543ab27a78f42130e839c7ac56654499f20bc
+==9836== Conditional jump or move depends on uninitialised value(s)
+==9836==    at 0x48E0100: getdelim (iogetdelim.c:59)
+==9836==    by 0x10B6AD: initSort (implement.c:433)
+==9836==    by 0x10D1EA: main (implement.c:712)

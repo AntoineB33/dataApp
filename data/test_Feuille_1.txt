@@ -1,13 +1,31 @@
-dataSpreadSheet	1	3	0	test_Feuille 1
+dataSpreadSheet	5	5	2	test_Feuille 1
+0,2
+1
+0,1
 
-1,2,3
-0,3
+0,0,1
+2
+0,1
 
 
+3
+0,1
+
+
+4
+0,1
+
+1,0,1
+5
+0,1
+
+1,0,1
 names	following	after	before			url
-a						view.mp4
-b	a					ri388d080srb1.jpg
-	b					21770154_min.webp
+a					k	url
+b						url
+c						url
+d					j	url
+e					j	url
 
 result.txt
 Affichage de result.txt

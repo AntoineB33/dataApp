@@ -24,17 +24,22 @@ typedef struct treeCons {
     int afters;
     int mediaSize;
     int befSize;
-    struct treeCons** before;
+    int* before;
     int attrPSize;
     attrProp* attrP;
 } treeCons;
 
 typedef struct {
+    int prevLast;
+    int prevRest;
+} prevStT;
+
+typedef struct {
     int last;
     int dist;
     int rest;
-    int prevLast;
-    int prevRest;
+    int prevSize;
+    prevStT* prevSt;
 } attribute;
 
 // Function prototypes

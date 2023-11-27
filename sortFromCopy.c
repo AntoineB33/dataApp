@@ -37,7 +37,7 @@ int main() {
     int count = 0;
     if(strcmp(name, "dataSpreadSheet") == 0) {
         while (name != NULL && strcmp(name, "\r\n") != 0) {
-            if(count == 3) {
+            if(count == 5) {
                 name = strtok(NULL, "\r");
                 char* command0 = "powershell.exe Get-Clipboard > data/";
                 char* ptr = name;
@@ -45,7 +45,7 @@ int main() {
                     memcpy(ptr, "_", 1);
                     ptr++;
                 }
-                command = malloc(strlen(command0) + strlen(name) + 5);
+                command = malloc(strlen(command0) + strlen(name) + 10);
                 sprintf(command, "%s%s.txt", command0, name);
                 int status = system(command);
                 if(status != 0) {

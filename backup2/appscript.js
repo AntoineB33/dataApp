@@ -23,8 +23,10 @@ var values0;
 var lenAgg;
 var attributes;
 var dataAgg;
+var error = NaN;
+var loner = NaN;
 
-function onEdit2(e) {
+function onEdit(e) {
   prevLine = parseInt(PropertiesService.getScriptProperties().getProperty("prevLine"));
   sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   range = sheet.getDataRange();
@@ -66,6 +68,9 @@ function onEdit2(e) {
       sheet.getRange(1, i+1).setValue(headLine[i]);
     }
   }
+  if("periods"!=values[colNumb-2]) {
+    sheet.getRange(1, colNumb-1).setValue("periods");
+  }
   if("url"!=values[colNumb-1]) {
     sheet.getRange(1, colNumb).setValue("url");
   }
@@ -89,94 +94,6 @@ function onEdit2(e) {
     }
   }
 
-  //Get the list of the references of images
-  if(values[0].length>=colNumb+2) {
-    let imgRef = []
-    let maxRef = -1;
-    let moveImg = 0;
-    let called = [];
-    for(let i = 1; i<nbLineBef; i++) {
-      let int = parseInt(values[i][colNumb+1]);
-      if(isNaN(int)) {
-        if(values0[i][colNumb+1] || !isNaN(int) && (int<0 || int<maxRef && called[int])) {
-          moveImg = 0;
-          break;
-        }
-        if(values0[i][colNumb] == "CellImage") {
-          moveImg = 1;
-        }
-      } else {
-        imgRef.push([i,int]);
-        if(int>maxRef) {
-          for(let i = maxRef; i<int; i++) {
-            called.push(0);
-          }
-          maxRef = int;
-        }
-        if(int!=imgRef.length) {
-          moveImg = 1;
-        }
-        if(values0[i][colNumb] != "CellImage") {
-          moveImg = 1;
-        }
-        called[int] = 1;
-      }
-    }
-    if(moveImg && imgRef.length==maxRef+1) {
-      let img = [];
-      for(let i = 1; i<nbLineBef; i++) {
-        if(values[i][colNumb].length) {
-          let sourceCell = sheet.getRange(i+1, colNumb+1);
-          if(values[i][colNumb][0]!="CellImage") {
-            sourceCell.clear();
-            continue;
-          }
-          let inlineImages2 = sheet.getRange(i+1, colNumb).getRichTextValue();
-          let yei = inlineImages2.getLinkUrl();
-          let inlineImages = sourceCell.getRichTextValue().getInlineImages();
-          if(inlineImages.length==0) {
-            sourceCell.clear();
-            continue;
-          }
-          img.push([i,inlineImages[0]]);
-          if(img.length>imgRef.length) {
-            break;
-          }
-        }
-      }
-      if(img.length==imgRef.length) {
-        let j = 0;
-        let g = 0;
-        for(let i = 1; i<nbLineBef; i++) {
-          if(imgRef[j][0]==i) {
-            if(img[g][0]==i) {
-              if(imgRef[j][1]!=g) {
-                sheet.getRange(i+1, colNumb+2).setRichTextValue(SpreadsheetApp.newRichTextValue().setInlineImage(img[imgRef[j][0]][1]).build());
-              }
-              g++;
-            } else {
-              sheet.getRange(i+1, colNumb+2).setRichTextValue(SpreadsheetApp.newRichTextValue().setInlineImage(img[imgRef[j][0]][1]).build());
-            }
-            i++;
-          } else if(img[g][0]==i) {
-            sheet.getRange(i+1, colNumb+2).setRichTextValue(SpreadsheetApp.newRichTextValue().setInlineImage([]).build());
-            g++;
-          }
-        }
-      }
-    }
-  }
-
-  //clean columns for images
-  for(var i = 4; i<nbLineBef; i++) {
-    if(values[i][colNumb].length!=0 && values[i][colNumb][0]!="CellImage") {
-      sheet.getRange(i+1,colNumb+1).clear();
-    }
-    if(values[i][colNumb+1].length!=0) {
-      sheet.getRange(i+1,colNumb+2).clear();
-    }
-  }
-
   for(var i = nbLineBef-1; i>0; i--) {
     if(values[i].some((v,j)=>v.length!=0 && j<colNumb)) {
       break;
@@ -191,6 +108,10 @@ function onEdit2(e) {
   perInt = [0];
   perIntCont = [0];
   var r;
+  if(values[0].length>colNumb) {
+    error = parseInt(values[1][colNumb+1]);
+    loner = parseInt(values[2][colNumb+1]);
+  }
   for(var i = 1; i<nbLineBef; i++) {
     perInt.push([]);
     perIntCont.push([[],[],[]]);
@@ -244,28 +165,15 @@ function onEdit2(e) {
     attNames.push([]);
     for(var i = 1; i<nbLineBef; i++) {
       for(var k = 0; k<values[i][j].length; k++) {
-        elem = values[i][j][k];
-        val = elem.toLowerCase();
-        for(var r = 1; r<nbLineBef; r++) {
-          for(var f = 0; f<values[r][0].length; f++) {
-            if(!searching(r,0,f)) {
-              continue;
-            }
-            if(found(r,i,j,k)==-1) {
-              return -1;
-            }
-            perInt[i].push(perRef[r]);
-            stop = true;
-            break;
-          }
-          if(stop) {
-            break;
-          }
+        isTip(i,j,k);
+        if(stat) {
+          values[i][j][k] = elem;
+          sugg(i,j);
+          return -1;
         }
-        if(!stop) {
+        if(j<colNumb-2) {
           if(perRef[i]!=-1) {
-            values[i][j].splice(k,1);
-            sugg(i,j);
+            suggSet(i,j,[]);
             return -1;
           }
           for(var r = 0; r<attNames[j-4].length; r++) {
@@ -280,6 +188,27 @@ function onEdit2(e) {
             data[i][2].push(acc+attNames[j-4].length);
             attNames[j-4].push(val);
             attributes.push(1);
+          }
+        } else {
+          for(var r = 1; r<nbLineBef; r++) {
+            for(var f = 0; f<values[r][0].length; f++) {
+              if(!searching(r,0,f)) {
+                continue;
+              }
+              if(found(r,i,j,k)==-1) {
+                return -1;
+              }
+              perInt[i].push(perRef[r]);
+              stop = true;
+              break;
+            }
+            if(stop) {
+              break;
+            }
+          }
+          if(!stop) {
+            suggRef(i,j,k);
+            return -1;
           }
         }
         stop = false;
@@ -303,22 +232,7 @@ function onEdit2(e) {
           }
         }
         if(!stop) {
-          var suggWords = [];
-          var suggWords2 = [];
-          for(var r = 1; r<values.length; r++) {
-            for(var f = 0; f<values[r][0].length; f++) {
-              var val2 = values[r][0][f];
-              if(val2.includes(val)) {
-                suggWords.push(val2);
-              } else if(val.includes(val2)) {
-                suggWords2.push(val2);
-              }
-            }
-          }
-          suggWords.sort(function(a,b) {return b.indexOf(val)-a.indexOf(val) || a>b});
-          suggWords2.sort(function(a,b) {return val.indexOf(b)-val.indexOf(a) || a>b});
-          suggWords = suggWords.concat(suggWords2);
-          suggSet(i,j,suggWords);
+          suggRef(i,j,k);
           return -1;
         }
         stop = false;
@@ -357,18 +271,21 @@ function onEdit2(e) {
     var s = periods[i][2];
     data[s][1].push(z);
     var c = periods[i][0];
-    data[z][0] = false;
-    data[c][3] = z;
     if(c == -1) {
+      c = values.length;
       values.push([]);
       for (let i = 0; i < colNumb; i++) {
-        values[values.length-1].push([]);
+        values[c].push([]);
       }
       for(var m = 0; m<periods[i][3].length; m++) {
-        values[values.length-1][0].push(periods[i][3][m]);
+        values[c][0].push(periods[i][3][m]);
       }
+      data.push([true,[],[],z]);
+      data[z][0] = false;
       continue;
     }
+    data[z][0] = false;
+    data[c][3] = z;
     /*for(var q = 1; q<3; q++) {
       for(var m = 0; m<values[c][q].length; m++) {
         values[z][q].push(values[c][q][m]);
@@ -511,20 +428,18 @@ function onEdit2(e) {
     }
     var j = i;
     var allLines = "";
-    while(j!==i) {
+    while(1) {
       var index = j+1;
       if(j>=nbLineBef) {
         index = "out";
       }
-      allLines += " >> "+values[j][0][0]+"("+index+")";
+      allLines += values[j][0][0]+"("+index+") >> ";
+      if(j==i) {
+        break;
+      }
       j = data[j][3];
     }
-    var index = j+1;
-    if(j>=nbLineBef) {
-      index = "out";
-    }
-    allLines += " >> "+values[j][0][0]+"("+index+")";
-    inconsist(allLines.slice(4));
+    inconsist(allLines);
     return -1;
   }
   //add the precedents to dataAgg
@@ -649,7 +564,13 @@ function onEdit2(e) {
     } else {
       font = "000000";
       if(perRef[i]>-1) {
-        color = "d97373";
+        if(periods[perRef[i]][0] == i) {
+          color = "ffa600";
+        } else if(periods[perRef[i]][1] == i) {
+          color = "93ff00";
+        } else {
+          color = "d97373";
+        }
       } else if(perRef[i]==-2) {
         color = "73d9cb";
       } else {
@@ -701,6 +622,33 @@ function onEdit2(e) {
   exitAllways();
 }
 
+function suggRef(i,j,k) {
+  var suggWords = [];
+  var suggWords2 = [];
+  for(var r = 1; r<nbLineBef; r++) {
+    if(perRef[r]>-1 && periods[perRef[r]][0]!=r) {
+      continue;
+    }
+    for(var f = 0; f<values[r][0].length; f++) {
+      var val2 = values[r][0][f];
+      if(val2.includes(val)) {
+        suggWords.push(val2);
+      } else if(val.includes(val2)) {
+        suggWords2.push(val2);
+      }
+    }
+  }
+  suggWords.sort(function(a,b) {return a.indexOf(val)-b.indexOf(val)});
+  suggWords2.sort(function(a,b) {return val.indexOf(a)-val.indexOf(b)});
+  suggWords = suggWords.concat(suggWords2).map((v)=>values[i][j].slice(0,k).concat([perNot[stat]+v]).concat(values[i][j].slice(k+1)).join("; "));
+  if(suggWords.length == 0) {
+    values[i][j].splice(k,1);
+    sugg(i,j);
+  } else {
+    suggSet(i,j,suggWords);
+  }
+}
+
 function found(r,i,j,k) {
   if(perRef[r] == -1) {
     values[i][j].splice(k,1);
@@ -736,7 +684,7 @@ function isTip(i,j,k) {
     if(val.startsWith(perNot[q])) {
       elem = values[i][j][k].slice(perNot[q].length).trim();
       val = elem.toLowerCase();
-      if(val=="" || perRef[i]>-1 && periods[perRef[i]][q]!=i) {
+      if(val=="") {
         elem = values[i][j][k];
         putSugg(i,k);
         return -1;
@@ -849,7 +797,7 @@ function dataGenerator() {
   var file = DriveApp.getFileById(fileId);
   if (file) {
     var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-    var result = 'dataSpreadSheet\t'+lenAgg+'\t'+(data.length-1)+'\t'+attributes.length+'\t'+spreadsheet.getName()+'_'+sheet.getName()+'\n'+
+    var result = 'dataSpreadSheet\t'+lenAgg+'\t'+(data.length-1)+'\t'+attributes.length+'\t'+error+'\t'+loner+'\t'+spreadsheet.getName()+'_'+sheet.getName()+'\n'+
       attributes.join(',')+"\n"
       +dataAgg.map((row) =>
         [row.lines.join(','),row.after.size+','+row.mediaNb, 
@@ -862,7 +810,7 @@ function dataGenerator() {
           return cell.join('; ');
         } else {
           return cell;
-        }}).slice(0,colNumb+1).join('\t')).join('\n');
+        }}).slice(0,colNumb).join('\t')).join('\n');
     //sheet.getRange(nbLineBef+10,colNumb + 1).setValue(result);
     file.setContent(result);
   }
