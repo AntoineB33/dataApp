@@ -1,23 +1,24 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
 
-int countDigitsUpToN(int n) {
-    int count = 0;
-    int length = 1;  // Length of the current digit range (starting from 1 digit)
-    int multiplier = 9;  // Multiplier for the number of digits in the current range
-
-    while (n > 0) {
-        // Calculate the number of digits contributed by the current digit range
-        count += (n < multiplier) ? n * length : multiplier * length;
-        n -= multiplier;
-        length++;
-        multiplier *= 10;  // Increase the multiplier for the next digit range
-    }
-
-    return count*2-1;
+void *thread_function() {
+    printf("This is a thread.\n");
+    pthread_exit(NULL);
 }
 
 int main() {
-    int n = 100;
-    printf("For n = %d, the length is: %d\n", n, countDigitsUpToN(n));  // Output: 23
+    pthread_t thread_id;
+    int ret;
+
+    ret = pthread_create(&thread_id, NULL, thread_function, NULL);
+    if (ret != 0) {
+        fprintf(stderr, "Error creating thread\n");
+        return 1;
+    }
+
+    pthread_join(thread_id, NULL);
+    printf("Thread execution completed.\n");
+
     return 0;
 }

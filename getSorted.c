@@ -34,9 +34,6 @@ int main() {
     int** linesRef = NULL;
     int* linesRefNb = NULL;
     int lenVal;
-    char** files = NULL;
-    int fileNb = 0;
-    char* command;
 
     char* filePATH = strdup(name);
     filePATH = realloc(filePATH, strlen(name) + strlen(dataPATH) + 5);
@@ -70,7 +67,6 @@ int main() {
     lenVal = atoi(token);
     getline(&line, &len, file);
     linesRef = malloc(lenAgg * sizeof(int*));
-    int mediaNb = 0;
     linesRefNb = malloc(lenAgg * sizeof(int*));
     int count = 0;
     for(int i = 0; i<lenAgg; i++) {
@@ -136,12 +132,11 @@ int main() {
     token = strtok(line, " ");
     char* error = malloc(strlen(token)+1);
     strcpy(error, token);
-    token = strtok(line, " ");
+    token = strtok(NULL, " ");
     char* loner = malloc(strlen(token)+1);
     strcpy(loner, token);
-    token = strtok(line, ",");
+    token = strtok(NULL, ",");
     count = 0;
-    int yh = 0;
     txtSize += strlen(error) + strlen(loner) + 2;
     txt = realloc(txt, txtSize);
     while(token!=NULL && token[0] != '\r') {
@@ -151,28 +146,35 @@ int main() {
             return -1;
         }
         strcat(txt, output[i]);
-        if(count<2) {
-            txt[strlen(txt)-2] = '\0';
-            if(count==0) {
-                sprintf(txt,"%s\t\t%s\r\n", txt, error);
-            } else {
-                sprintf(txt,"%s\t\t%s\r\n", txt, loner);
-            }
-        }
         token = strtok(NULL, ",");
         count++;
-        yh = i;
     }
     if(count!=lenAgg) {
         printf("Not sorted yet.");
         return -1;
     }
+    token = strtok(txt, "\r\n");
+    char* newTxt = malloc(txtSize+strlen(error)+strlen(loner)+10);
+    strcpy(newTxt, token);
+    strcat(newTxt, "\r\n");
+    token = strtok(NULL, "\r\n");
+    strcat(newTxt, token);
+    strcat(newTxt, "\t\t");
+    strcat(newTxt, error);
+    strcat(newTxt, "\r\n");
+    token = strtok(NULL, "\r\n");
+    strcat(newTxt, token);
+    strcat(newTxt, "\t\t");
+    strcat(newTxt, loner);
+    token = strtok(NULL, "\0");
+    strcat(newTxt, "\r\n");
+    strcat(newTxt, token);
     FILE *clipboard = popen("clip.exe", "w");
     if (clipboard == NULL) {
         printf("Error opening clipboard");
         return -1;
     }
     // return 1;
-    fprintf(clipboard, "%s", txt);
+    fprintf(clipboard, "%s", newTxt);
     pclose(clipboard);
 }

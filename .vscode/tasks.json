@@ -12,7 +12,10 @@
                 "${fileDirname}/${fileBasenameNoExtension}",
                 "-lssl",
                 "-lcrypto",
-                "-pthread"
+                "-pthread",
+                "-Wall",
+                "-Wextra",
+                "-Werror"
             ],
             "options": {
                 "cwd": "${fileDirname}"
@@ -61,7 +64,10 @@
                 "${fileDirname}/${fileBasenameNoExtension}",
                 "-lssl",
                 "-lcrypto",
-                "-pthread"
+                "-pthread",
+                "-Wall",
+                "-Wextra",
+                "-Werror"
             ],
             "options": {
                 "cwd": "${fileDirname}"

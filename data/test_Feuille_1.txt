@@ -1,4 +1,4 @@
-dataSpreadSheet	5	5	2	test_Feuille 1
+dataSpreadSheet	5	5	2	NaN	NaN	test_Feuille 1
 0,2
 1
 0,1

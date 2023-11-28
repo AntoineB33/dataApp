@@ -1,4 +1,4 @@
-dataSpreadSheet	168	278	46	NaN	NaN	dance_Feuille 1
+dataSpreadSheet	168	281	46	NaN	NaN	dance_Feuille 1
 0,0,0,6,0,28,2,2,8,0,0,0,0,0,2,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,2,0
 1
 0,0
@@ -10,23 +10,23 @@ dataSpreadSheet	168	278	46	NaN	NaN	dance_Feuille 1
 
 4
 1,1
-3,62
+3,63
 0,0,1	23,0,1
 5
 1,1
-62
+63
 1,0,1	24,0,1
 6,7
 0,0
-5,65,114
+5,66,113
 
 8,9
 1,0
-6,39
+6,39,100
 
-10,11,113,114,115,116,117
+10,11,114,115,116,117,118
 2,1
-7,34,71,72,83,87,90,92,94
+7,34,72,73,84,87,90,92,94
 5,0,1	39,0,1
 12,13
 1,0
@@ -50,15 +50,15 @@ dataSpreadSheet	168	278	46	NaN	NaN	dance_Feuille 1
 2,0,1
 20,21
 0,0
-13,123
+13,122
 
 22,23
 1,0
-86,103
+39,103
 
 24,25
 0,0
-15,129
+15,128
 
 26,27
 1,0
@@ -66,15 +66,15 @@ dataSpreadSheet	168	278	46	NaN	NaN	dance_Feuille 1
 
 28,29
 0,0
-18,132
+18,131
 
 30,31,32
 2,1
-77,128,131,140
+78,127,130,139
 3,0,1
 33,34
 1,0
-17,19,23,76,77
+17,19,23,77,78
 
 35,36
 1,0
@@ -82,21 +82,21 @@ dataSpreadSheet	168	278	46	NaN	NaN	dance_Feuille 1
 
 37
 1,1
-139
+138
 4,0,1	25,0,1
-38,229,39
+38,230,39
 3,1
-22,111,126,142,143
+22,110,125,141,142
 5,0,1
 41
 1,1
-142,143
+141,142
 5,0,1	26,0,1
-43,231
+43,232
 1,0
 24
 
-44,235,45
+44,236,45
 1,1
 27
 6,0,1	27,0,1
@@ -106,75 +106,75 @@ dataSpreadSheet	168	278	46	NaN	NaN	dance_Feuille 1
 7,0,1	28,0,1
 48
 1,1
-145
+144
 8,0,1
-49,237
+49,238
 1,0
 28
 
 50
 1,1
-147
+146
 9,0,1
-53,267,54
+53,268,54
 1,1
-148,162
+147,161
 8,0,1	5,0,1
-55,269,56
+55,270,56
 1,1
-163
+162
 8,0,1
-57,243
+57,244
 1,0
 32
 
 58
 1,1
-150
+149
 10,0,1
 59
 1,1
-151
+150
 5,0,1
-60,247,161,162,163,275,164
+60,248,162,163,164,276,165
 2,1
-35,120,166
+35,119,165
 5,0,1	43,0,1
-61,249
+61,250
 1,0
 36
 
-62,251
+62,252
 1,0
 37
 
-63,271,64
+63,272,64
 1,1
+163
+
+65,274
+1,0
 164
 
-65,273
+68,264,148
+3,1
+95,103,104
+8,0,1
+69,258
 1,0
-165
-
-68,253
-1,0
-40
-
-69,257
-1,0
-41
-
-70,259
-2,0
 42
 
-71
+70,278,177,178,47,234,179
 1,1
-158
-3,0,1
-72
-0,1
+26,166
+8,0,1
+71,260
+2,0
+43
 
+72
+1,1
+157
 3,0,1
 73
 0,1
@@ -183,494 +183,494 @@ dataSpreadSheet	168	278	46	NaN	NaN	dance_Feuille 1
 74
 0,1
 
-11,0,1
+3,0,1
 75
 0,1
 
-
+11,0,1
 76
 0,1
 
-12,0,1
+
 77
 0,1
 
-13,0,1	29,0,1
+12,0,1
 78
 0,1
 
-14,0,1
+13,0,1	29,0,1
 79
 0,1
 
-15,0,1	30,0,1
-81
-1,1
-151
-5,0,1	31,0,1
-82
+14,0,1
+80
 0,1
 
-
+15,0,1	30,0,1
+82
+1,1
+150
+5,0,1	31,0,1
 83
 0,1
 
-16,0,1	32,0,1
+
 84
 0,1
 
-14,0,1
+16,0,1	32,0,1
 85
 0,1
 
-3,0,1
+14,0,1
 86
 0,1
 
-17,0,1
+3,0,1
 87
 0,1
 
-5,0,1
+17,0,1
 88
 0,1
 
-
+5,0,1
 89
 0,1
 
-8,0,1
+
 90
 0,1
 
-5,0,1
+8,0,1
 91
 0,1
 
+5,0,1
+92
+0,1
+
 7,0,1
-92,93,94,95
+93,94,95,96
 2,1
-63
+64
 5,0,1	33,0,1
-96
-1,1
-64,65
-8,0,1	34,0,1
 97
 1,1
-65
-18,0,1	35,0,1
-98,99,100,101
-3,1
+65,66
+8,0,1	34,0,1
+98
+1,1
 66
+18,0,1	35,0,1
+99,100,101,102
+3,1
+67
 5,0,1	36,0,1
-102,103,104
+103,104,105
 1,1
-67,112
+68,111
 5,0,1	37,0,1
-105,106,107
+106,107,108
 1,1
-68
+69
 5,0,1
-108
+109
 1,1
-69,138
+70,137
 5,0,1
-109,110,111
+110,111,112
 1,1
-70,85
+71,86
 5,0,1	38,0,1
-112
+113
 1,1
-6
+6,136
 5,0,1
-118,119,120
+119,120,121
 1,1
-115
+114
 19,0,1	20,0,1
-121,122
+122,123
 1,0
-73,75
+74,76
 
-123,124
+124,125
 1,0
-74
+75
 
-125
+126
 1,1
 96
 21,0,1
-126,127,80,245,42
+127,128,81,246,42
 2,1
-33,51,76,79,80,82
+33,52,77,80,81,83
 5,0,1
-128,129
+129,130
 2,0
-133
-
-130,131
-2,0
-38,78
-
 132
-1,1
-130
 
-133,241
+131,132
+2,0
+38,79
+
+133
+1,1
+129
+
+134,242
 1,0
 31
 
-134,135
+135,136
 1,0
-81
+82
 
-136,137,138
+137,138,139
 1,1
-116
+115
 6,0,1	39,0,1
-139,140,141
+140,141,142
 1,1
-118
+117
 22,0,1
-142,143
+143,144
 1,0
-84
+85
 
-144
+145
 1,1
 102
 19,0,1	20,0,1	40,0,1
-145,146
+146,147
 1,0
-86
+39
 
-147
-2,1
-103,105
-8,0,1
-148,261
+149,262
 1,0
-88,159
+88,158
 
-149,150,187
+150,151,188
 3,1
-91,111
+91,110
 5,0,1	44,0,1
-151
+152
 1,1
-111
+110
 5,0,1
-152,153
+153,154
 1,0
-21,88,89,109
+21,88,89,108
 
-154,155,156
+155,156,157
 1,1
-104,110
+41,109
 5,0,1	41,0,1
-157,158
+158,159
 1,0
 93
 
-159
-1,1
-106
-5,0,1	42,0,1
 160
 1,1
-107
+105
+5,0,1	42,0,1
+161
+1,1
+106
 5,0,1
-165,263,167
-0,1
-34,160
+166,254,168
+1,1
+34,40
 5,0,1
-168
-1,0
-135
-
 169
+1,0
+134
+
+170
 2,0
 98
 
-170
+171
 1,0
 99
 
-171
+172
 2,0
 100
 
-172
-2,0
-114
-
 173
-2,0
-
+3,0
+113
 
 174
-1,0
-136
+2,0
+
 
 175
-2,0
-123
-
-176,177,47,233,178
-1,1
-26
-8,0,1
-179
 1,0
-137
+135
+
+176
+2,0
+122
 
 180
 1,0
 136
 
-181,182,183,40,227
+181
 1,0
-21,108
+135
 
-184
+182,183,184,40,228
+1,0
+21,107
+
+185
 1,1
-125
-5,0,1	44,0,1
-186
-2,1
-88,161
-5,0,1
-188
-1,0
-159
-
-189,190,191,192,193
-3,2
 124
+5,0,1	44,0,1
+187
+2,1
+88,160
+5,0,1
+189
+1,0
+158
+
+190,191,192,193,194
+3,2
+123
 5,0,2	45,0,1
-194
+195
+1,0
+112
+
+196
 1,0
 113
 
-195
-1,0
-114
-
-196
+197
 3,0
 
-
-197
-1,0
-136
 
 198
 1,0
-117
+135
 
 199
 1,0
-134
+116
 
 200
 1,0
-134
+133
 
 201
 1,0
-
+133
 
 202
 1,0
-136
+
 
 203
 1,0
-122
+135
 
 204
 1,0
-136
+121
 
 205
-2,0
-
+1,0
+135
 
 206
-1,0
-136
+2,0
+
 
 207
 1,0
-136
+135
 
-210,277,211
+208
+1,0
+135
+
+211,280,212
 2,1
 167
 5,0,1
-212
-2,0
-136
-
 213
 2,0
-129
+135
 
 214
 2,0
-
-
-215
-3,0
-131,140
-
-216
-2,0
-132
-
-217
-3,0
-
-
-218
-1,0
-134,140
-
-219
-4,0
-135
-
-220
-2,0
-136
-
-221
-9,0
-137
-
-222
-2,0
-138
-
-223
-2,0
-
-
-224
-1,0
-140
-
-225
-5,0
-132
-
-226,166
-0,0
-119
-
-228,185,265
-2,0
-109
-
-230
-2,0
 128
 
-232
-1,0
-140
+215
+2,0
 
-234,51,239,52
+
+216
+3,0
+130,139
+
+217
+2,0
+131
+
+218
+3,0
+
+
+219
+1,0
+133,139
+
+220
+4,0
+134
+
+221
+2,0
+135
+
+222
+9,0
+136
+
+223
+3,0
+137
+
+224
+2,0
+
+
+225
+1,0
+139
+
+226
+5,0
+131
+
+227,167
+0,0
+118
+
+229,186,266
+2,0
+108
+
+231
+2,0
+127
+
+233
+1,0
+139
+
+235,51,240,52
 1,1
 29,30
 8,0,1
-236
+237
 1,0
-144
+143
 
-238
+239
 1,0
-146
+145
 
-240
+241
 2,0
-121
+120
 
-242
+243
 1,0
-134
+133
 
-244
-1,0
-149
-
-246
-2,0
-127
-
-248
-1,0
-
-
-250
-1,0
-152
-
-252
-1,0
-153
-
-254
-1,0
-100
-
-256
-2,0
-130
-
-258
-1,0
-155
-
-260
-1,0
-156,157
-
-262
-2,0
-99
-
-264
-2,0
-
-
-266,208,209
-1,0
-75,126
-
-268
-1,0
-
-
-270
+245
 1,0
 148
 
-272
+247
+2,0
+126
+
+249
+1,0
+
+
+251
+1,0
+151
+
+253
+1,0
+152
+
+255
+2,0
+159
+
+257
+2,0
+129
+
+259
 1,0
 154
 
-274,66,255,67
-1,1
-41,130,156
-3,0,1
-276
+261
 1,0
-160
+155,156
 
-278
+263
+2,0
+99
+
+265
 1,0
-127
+100
+
+267,209,210
+1,0
+76,125
+
+269
+1,0
+
+
+271
+1,0
+147
+
+273
+1,0
+153
+
+275,66,256,67
+1,1
+42,129,155
+3,0,1
+277
+1,0
+154
+
+279
+1,0
+
+
+281
+1,0
+126
 
 names	following	after	before	characters	musics	periods	url
 							
@@ -741,8 +741,9 @@ kizuma-akari 1st rape						kizuma-akari rape
 kizuma-akari 2nd rape	end:kizuma-akari 1st rape					kizuma-akari rape	
 kizuma-akari mouses 2nd rape	start:kizuma-akari 2nd rape			kizuna-akari			https://ecchi.iwara.tv/videos/ol2d6f1waks64gqaa
 nude in public						nude in clip	
-public do only bukkake						nude in public	
-bukkake photoshoot kizuma-akari						kizuma-akari 2nd rape; public do only bukkake	
+public only do bukkake at conv						miku photoshoot sex with one	
+sex in public initiated by staff							
+bukkake photoshoot kizuma-akari						kizuma-akari 2nd rape; public only do bukkake at conv	
 kizuma-Akari Bukkake conv				kizuna-akari		bukkake photoshoot kizuma-akari	https://ecchi.iwara.tv/videos/bmrwacaegbc3vgkzd
 kizuma-akari cum conv dance after				kizuna-akari			https://ecchi.iwara.tv/videos/el5baik8aqhkm22dw
 kizuma-akari service 1 tv room				kizuna-akari			https://ecchi.iwara.tv/videos/ngzakigxzefpmdx84
@@ -819,7 +820,7 @@ start:mirai akari happy to be naked
 KM strip audition				Kizuna AI; Mirai Akari	Disturb Manic Girl	mirai akari happy to be naked	https://ecchi.iwara.tv/videos/y5z3es8eozt0dojj7?language=de
 miku happy to make her friend naked						miku happy to be naked	
 start:miku happy to make her friend naked							
-rin strip street hypnos miku				rin		rin embarrassed to be naked; miku happy to make her friend naked	https://ecchi.iwara.tv/videos/9eomesen82izkwvgr?language=de
+rin strip street hypnos miku	start:nude in public			rin		rin embarrassed to be naked; miku happy to make her friend naked	https://ecchi.iwara.tv/videos/9eomesen82izkwvgr?language=de
 sex outside						sex in clip	
 miku sex empty street						sex outside	
 start:miku sex empty street							
@@ -837,7 +838,7 @@ miku raped public	start:concert inside sex					miku sex
 start:miku raped public							
 public do only bukkake with one bold sex with miku inside concert	start:miku raped public					miku photoshoot sex with one	
 miku rape apple pie	start:public do only bukkake with one bold sex with miku inside concert			miku	apple pie		https://ecchi.iwara.tv/videos/agme9imd7gu8m6pk5
-miku photoshoot sex with one							
+miku photoshoot sex with one						nude in public	
 start:miku photoshoot sex							
 miku cum conv	start:miku photoshoot sex with one			miku			https://ecchi.iwara.tv/videos/m41jdtqg7jcoq4gbp
 end:loli gangbang							
@@ -848,7 +849,7 @@ end:nude in clip
 end:akari sex							
 end:mirai akari happy to be naked							
 end:rin embarrassed to be naked							
-rin sex						len sex	
+rin sex	start:sex in public initiated by staff					len sex	
 start:rin sex							
 rin 1st condom sex street	start:rin condom rape			rin			https://ecchi.iwara.tv/videos/jqmyrcp8glcwo7em3
 end:miku happy to make her friend naked							
@@ -925,18 +926,18 @@ start:concert sex
 end:concert sex							
 start:gangbang concert							
 end:gangbang concert							
-start:nude in public							
-end:nude in public							
+start:miku photoshoot sex with one							
+end:miku photoshoot sex with one							
 start:kizuma-akari 2nd rape							
 end:kizuma-akari 2nd rape							
-start:public do only bukkake							
-end:public do only bukkake							
+start:public only do bukkake at conv							
+end:public only do bukkake at conv							
 start:bukkake photoshoot kizuma-akari							
 end:bukkake photoshoot kizuma-akari							
 start:sex outside							
 end:sex outside							
-start:miku photoshoot sex with one							
-end:miku photoshoot sex with one							
+start:nude in public							
+end:nude in public							
 start:miku glad to have sex							
 end:miku glad to have sex							
 start:miku sex relative							
@@ -949,6 +950,8 @@ start:kizuma-akari 1st rape
 end:kizuma-akari 1st rape							
 start:public do only bukkake with one bold sex with miku inside concert							
 end:public do only bukkake with one bold sex with miku inside concert							
+start:sex in public initiated by staff							
+end:sex in public initiated by staff							
 start:miku orgy bed							
 end:miku orgy bed							
 

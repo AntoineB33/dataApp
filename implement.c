@@ -46,7 +46,6 @@ char* askFile(char* path0) {
         printf("No data found.");
         return NULL;
     }
-    char* token;
     while(1) {
         if (getline(&name, &size, stdin) == -1) {
             printf("Error reading input");
@@ -116,16 +115,14 @@ void* sortTable(void* id) {
     }
     int i = 1;  // ith node to place
     int imm = 0;    // i-1
-    int n;  // nth medium
+    int n = 0;  // nth medium
     int c;
-    bool loop = true;
     int back = 0;
     treeCons* po;
     int errorP;
     int lonerP;
-    bool newSort = false;
     prevStT* prevIP;
-    int lastThRootP = 0;
+    int lastThRootP = -1;
     while(1) {
         pthread_rwlock_wrlock(&newRoot);
         while(1) {
@@ -230,15 +227,15 @@ void* sortTable(void* id) {
                 pthread_rwlock_unlock(&newRoot);
                 return except;
             }
-            if(res[imm]>lastThRoot) {
+            lastThRootP++;
+            if(lastThRootP>lastThRoot) {
                 break;
             }
-            lastThRootP++;
             i--;
             back = 2;
         }
         lastThRoot = lastThRootP;
-        printf("lastThRoot:%d %d\n", lastThRoot, threadId);
+        printf("lastThRoot:%d %ld\n", lastThRoot, threadId);
         pthread_rwlock_unlock(&newRoot);
         while (1) {
             // if(sorter(i,lenAggP, imm, n, res, spaces, loners, errori, back, attributesI, errorP, lonerP, newSort, cal, u, xc, compar, k, y, q, po, c) == -1) {
@@ -379,9 +376,10 @@ void* sortTable(void* id) {
                 pthread_rwlock_unlock(&checkM);
                 sprintf(txt2, "%d %d ", errori[i], loners[i]);
                 for(int j = 1; j<lenAggP; j++) {
-                    sprintf(txt2, "%s%d,", txt2, res[j]);
+                    char temp[100]; // Adjust the size as per your needs
+                    sprintf(temp, "%s%d,", txt2, res[j]);
+                    strcpy(txt2, temp);
                 }
-                txt2[strlen(txt2)-1] = '\0';
                 file = fopen(filePATH, "w");
                 if (file == NULL) {
                     printf("Failed to open the output file.\n");
@@ -416,6 +414,7 @@ void* userInterr() {
         error = -1;
         pthread_rwlock_unlock(&errorM);
     }
+    return (void*)1;
 }
 
 int initSort(char *argv) {
@@ -430,8 +429,7 @@ int initSort(char *argv) {
     file = fopen(filePATH, "r");
     if (file == NULL) {
         filePATH = realloc(filePATH, strlen(filePATH) + 30);
-        sprintf(filePATH, "Failed to open the file %s\n", filePATH);
-        printf("%s",filePATH);
+        printf("Failed to open the file %s\n",filePATH);
         return -1;
     }
     int filNo = fileno(file);
@@ -544,7 +542,6 @@ int initSort(char *argv) {
     // numCores = 1;
     threads = malloc((numCores+1) * sizeof(pthread_t));
     lvl = 0;
-    char* estim = malloc(100);
 
     filePATH = realloc(filePATH, strlen(filePATH) + 20);
     sprintf(filePATH, "data/%s_sorted.txt", argv);
@@ -564,7 +561,6 @@ int initSort(char *argv) {
     spaces[0] = 0;
     loners[0] = 0;
     errori[0] = 0;
-    int q;  // qth attribute
     attrProp* y;
     attribute* attrP;
     attribute* attributesI = malloc(attNb * sizeof(attribute));
@@ -576,12 +572,9 @@ int initSort(char *argv) {
     int i = 1;  // ith node to place
     int imm = 0;    // i-1
     int n = 0;  // nth medium
-    int c = 0;
-    bool loop = true;
+    int c;
     int back = 0;
     treeCons* po;
-    int lonerP;
-    bool newSort = false;
     lvl = 1;
     int nbLeaves = 0;
     int nbLeavesi = 0;
@@ -753,6 +746,7 @@ int initSort(char *argv) {
             return -1;
         }
     }
+    return 1;
 }
 
 
