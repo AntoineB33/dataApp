@@ -62,15 +62,16 @@ char* askFile(char* path0) {
         free(files[i]);
     }
     free(files);
+    free(path);
     return name;
 }
 
 int lenAgg;
 int attNb;
 treeCons* trees0;
-char** output;
-char* txt2;
-attribute* attributes;
+char** output = NULL;
+char* txt2 = NULL;
+attribute* attributes = NULL;
 int error;
 int space;
 int loner;
@@ -82,21 +83,30 @@ pthread_rwlock_t errorM = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t lonerM = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t errorWM = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t lonerWM = PTHREAD_RWLOCK_INITIALIZER;
-pthread_t *threads;
-FILE* file;
-char* filePATH;
+pthread_t *threads = NULL;
+FILE* file = NULL;
+char* filePATH = NULL;
 size_t len;
 int lastThRoot;
 
 
 void* sortTable(void* id) {
     intptr_t threadId = (intptr_t)id;
-    intptr_t exc = -1;
-    void* except = (void*)exc;
     int lenAggP = lenAgg+1;
     treeCons* trees = malloc(lenAgg * sizeof(treeCons));
     for(int i = 0; i<lenAgg; i++) {
-        trees[i] = trees0[i];
+        trees[i].afters = trees0[i].afters;
+        trees[i].mediaSize = trees0[i].mediaSize;
+        trees[i].befSize = trees0[i].befSize;
+        trees[i].before = malloc(trees[i].befSize * sizeof(int));
+        for(int j = 0; j<trees[i].befSize; j++) {
+            trees[i].before[j] = trees0[i].before[j];
+        }
+        trees[i].attrPSize = trees0[i].attrPSize;
+        trees[i].attrP = malloc(trees[i].attrPSize * sizeof(attrProp));
+        for(int j = 0; j<trees[i].attrPSize; j++) {
+            trees[i].attrP[j] = trees0[i].attrP[j];
+        }
     }
     int* res = malloc(lenAggP * sizeof(int));
     int* spaces = malloc((lenAggP) * sizeof(int));
@@ -224,8 +234,25 @@ void* sortTable(void* id) {
                 back = 0;
             }
             if(i==0) {
+                printf("wtf\n");
                 pthread_rwlock_unlock(&newRoot);
-                return except;
+                printf("wtf\n");
+                for(int j = 0; j<attNb; j++) {
+                    free(attributesI[j].prevSt);
+                }
+                free(attributesI);
+                free(res);
+                free(spaces);
+                free(loners);
+                free(errori);
+                printf("wtf\n");
+                for(int j = 0; j<lenAgg; j++) {
+                    free(trees[j].attrP);
+                    free(trees[j].before);
+                }
+                free(trees);
+                printf("wtf\n");
+                return NULL;
             }
             lastThRootP++;
             if(lastThRootP>lastThRoot) {
@@ -383,12 +410,12 @@ void* sortTable(void* id) {
                 file = fopen(filePATH, "w");
                 if (file == NULL) {
                     printf("Failed to open the output file.\n");
-                    return except;
+                    return NULL;
                 }
                 int fileNo = fileno(file);
                 if (flock(fileNo, LOCK_EX) == -1) {
                     printf("Failed to obtain lock");
-                    return except;
+                    return NULL;
                 }
                 fprintf(file, "%s", txt2);
                 flock(fileNo, LOCK_UN);
@@ -405,14 +432,17 @@ void* sortTable(void* id) {
 
 void* userInterr() {
     printf("Press q to stop the sorting.\n");
-    if (getline(&filePATH, &len, stdin) == -1) {
-        printf("Error reading input");
-        return NULL;
-    }
-    if(strcmp(filePATH, "q\n") == 0) {
-        pthread_rwlock_wrlock(&errorM);
-        error = -1;
-        pthread_rwlock_unlock(&errorM);
+    while(1) {
+        if (getline(&filePATH, &len, stdin) == -1) {
+            printf("Error reading input");
+            return NULL;
+        }
+        if(strcmp(filePATH, "q\n") == 0) {
+            pthread_rwlock_wrlock(&errorM);
+            error = -1;
+            pthread_rwlock_unlock(&errorM);
+            break;
+        }
     }
     return (void*)1;
 }
@@ -478,7 +508,6 @@ int initSort(char *argv) {
     int** precRef = malloc(lenAgg * sizeof(int*));
     int mediaNb = 0;
     for(int i = 0; i<lenAgg; i++) {
-        trees0[i].id = i;
         getline(&line, &len, file);
         getline(&line, &len, file);
         token = strtok(line, ",");
@@ -503,10 +532,19 @@ int initSort(char *argv) {
         count = 0;
         token = strtok(line, ",");
         while(token!=NULL && token[0] != '\r') {
+            if(i == 85) {
+                printf("%s %d\n", token, atoi(token));
+            }
             trees0[i].attrP[count].attr = atoi(token);
             token = strtok(NULL, ",");
+            if(i == 85) {
+                printf("%s %d\n", token, atoi(token));
+            }
             trees0[i].attrP[count].posInt = atoi(token);
             token = strtok(NULL, "\t");
+            if(i == 85) {
+                printf("%s %d\n", token, atoi(token));
+            }
             trees0[i].attrP[count].posOut = atoi(token);
             token = strtok(NULL, ",");
             count++;
@@ -514,8 +552,10 @@ int initSort(char *argv) {
         trees0[i].attrPSize = count;
         trees0[i].attrP = realloc(trees0[i].attrP, count * sizeof(attrProp));
     }
+    free(line);
     flock(filNo, LOCK_UN);
     fclose(file);
+    printf(":%d %d %d \n",trees0[85].attrP[0].attr,trees0[85].attrP[0].posInt,trees0[85].attrP[0].posOut);
     printf("afters:%d\n",trees0[0].afters);
     for(int i = 0; i<lenAgg; i++) {
         trees0[i].before = malloc(trees0[i].befSize * sizeof(treeCons*));
@@ -539,7 +579,7 @@ int initSort(char *argv) {
         }
     }
     int numCores = sysconf(_SC_NPROCESSORS_ONLN);
-    // numCores = 1;
+    numCores = 1;
     threads = malloc((numCores+1) * sizeof(pthread_t));
     lvl = 0;
 
@@ -552,7 +592,18 @@ int initSort(char *argv) {
     int lenAggP = lenAgg+1;
     treeCons* trees = malloc(lenAgg * sizeof(treeCons));
     for(int i = 0; i<lenAgg; i++) {
-        trees[i] = trees0[i];
+        trees[i].afters = trees0[i].afters;
+        trees[i].mediaSize = trees0[i].mediaSize;
+        trees[i].befSize = trees0[i].befSize;
+        trees[i].before = malloc(trees[i].befSize * sizeof(int));
+        for(int j = 0; j<trees[i].befSize; j++) {
+            trees[i].before[j] = trees0[i].before[j];
+        }
+        trees[i].attrPSize = trees0[i].attrPSize;
+        trees[i].attrP = malloc(trees[i].attrPSize * sizeof(attrProp));
+        for(int j = 0; j<trees[i].attrPSize; j++) {
+            trees[i].attrP[j] = trees0[i].attrP[j];
+        }
     }
     int* res = malloc(lenAggP * sizeof(int));
     int* spaces = malloc((lenAggP) * sizeof(int));
@@ -689,10 +740,18 @@ int initSort(char *argv) {
         }
         back = 2;
     }
+    for(int j = 0; j<attNb; j++) {
+        free(attributesI[j].prevSt);
+    }
+    free(attributesI);
     free(res);
     free(spaces);
     free(loners);
     free(errori);
+    for(int j = 0; j<lenAgg; j++) {
+        free(trees[j].attrP);
+        free(trees[j].before);
+    }
     free(trees);
     lastThRoot = -1;
     printf("lvl:%d\n", lvl);
@@ -746,11 +805,14 @@ int initSort(char *argv) {
             return -1;
         }
     }
+    free(threads);
+    free(filePATH);
+    free(txt2);
     return 1;
 }
 
 
 
-// int main() {
-//     initSort(askFile(""));
-// }
+int main() {
+    initSort("dance_Feuille_1");
+}

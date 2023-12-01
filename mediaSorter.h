@@ -20,7 +20,6 @@ typedef struct {
 } attrProp;
 
 typedef struct treeCons {
-    int id;
     int afters;
     int mediaSize;
     int befSize;
