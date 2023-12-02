@@ -17,7 +17,6 @@ int main() {
     FILE* clipboard;
     char* command;
     char* firstLine;
-    DIR *dir;
 
     size_t size = 0;
     clipboard = popen("powershell.exe Get-Clipboard", "r");
@@ -37,7 +36,7 @@ int main() {
     int count = 0;
     if(strcmp(name, "dataSpreadSheet") == 0) {
         while (name != NULL && strcmp(name, "\r\n") != 0) {
-            if(count == 5) {
+            if(count == 3) {
                 name = strtok(NULL, "\r");
                 char* command0 = "powershell.exe Get-Clipboard > data/";
                 char* ptr = name;

@@ -42,7 +42,7 @@ typedef struct {
 } attribute;
 
 // Function prototypes
-void* sortTable(void* id);
+void* sortTable();
 int initSort(char *argv);
 char* askFile(char* path);
 

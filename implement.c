@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <sys/file.h>
 #include <signal.h>
+#include <sys/select.h>
 
 
 char* askFile(char* path0) {
@@ -75,6 +76,7 @@ attribute* attributes = NULL;
 int error;
 int space;
 int loner;
+int errorP;
 int lvl;
 pthread_rwlock_t newRoot = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t checkM = PTHREAD_RWLOCK_INITIALIZER;
@@ -88,10 +90,11 @@ FILE* file = NULL;
 char* filePATH = NULL;
 size_t len;
 int lastThRoot;
+char* temp = NULL;
 
 
-void* sortTable(void* id) {
-    intptr_t threadId = (intptr_t)id;
+void* sortTable() {
+    // intptr_t threadId = (intptr_t)id;
     int lenAggP = lenAgg+1;
     treeCons* trees = malloc(lenAgg * sizeof(treeCons));
     for(int i = 0; i<lenAgg; i++) {
@@ -115,12 +118,14 @@ void* sortTable(void* id) {
     spaces[0] = 0;
     loners[0] = 0;
     errori[0] = 0;
-    attrProp* y;
-    attribute* attrP;
+    attrProp* y = NULL;
+    attribute* attrP = NULL;
     attribute* attributesI = malloc(attNb * sizeof(attribute));
     for(int j = 0; j<attNb; j++) {
-        attributesI[j] = attributes[j];
-        attributesI[j].prevSt = malloc(attributesI[j].prevSize * sizeof(prevStT));
+        attributesI[j].last = attributes[j].last;
+        attributesI[j].dist = attributes[j].dist;
+        attributesI[j].rest = attributes[j].rest;
+        attributesI[j].prevSt = malloc(attributes[j].prevSize * sizeof(prevStT));
         attributesI[j].prevSize = 0;
     }
     int i = 1;  // ith node to place
@@ -128,10 +133,10 @@ void* sortTable(void* id) {
     int n = 0;  // nth medium
     int c;
     int back = 0;
-    treeCons* po;
+    treeCons* po = NULL;
     int errorP;
     int lonerP;
-    prevStT* prevIP;
+    prevStT* prevIP = NULL;
     int lastThRootP = -1;
     while(1) {
         pthread_rwlock_wrlock(&newRoot);
@@ -234,9 +239,7 @@ void* sortTable(void* id) {
                 back = 0;
             }
             if(i==0) {
-                printf("wtf\n");
                 pthread_rwlock_unlock(&newRoot);
-                printf("wtf\n");
                 for(int j = 0; j<attNb; j++) {
                     free(attributesI[j].prevSt);
                 }
@@ -245,13 +248,11 @@ void* sortTable(void* id) {
                 free(spaces);
                 free(loners);
                 free(errori);
-                printf("wtf\n");
                 for(int j = 0; j<lenAgg; j++) {
                     free(trees[j].attrP);
                     free(trees[j].before);
                 }
                 free(trees);
-                printf("wtf\n");
                 return NULL;
             }
             lastThRootP++;
@@ -262,7 +263,7 @@ void* sortTable(void* id) {
             back = 2;
         }
         lastThRoot = lastThRootP;
-        printf("lastThRoot:%d %ld\n", lastThRoot, threadId);
+        // printf("lastThRoot:%d %ld\n", lastThRoot, threadId);
         pthread_rwlock_unlock(&newRoot);
         while (1) {
             // if(sorter(i,lenAggP, imm, n, res, spaces, loners, errori, back, attributesI, errorP, lonerP, newSort, cal, u, xc, compar, k, y, q, po, c) == -1) {
@@ -272,6 +273,7 @@ void* sortTable(void* id) {
                 if(back==0) {
                     res[i] = 0;
                 } else {
+                    // return NULL;
                     po = &trees[res[i]];
                     for(int k = 0; k<po->attrPSize; k++) {
                         attrP = &attributesI[po->attrP[k].attr];
@@ -281,6 +283,7 @@ void* sortTable(void* id) {
                             attrP->rest = prevIP->prevRest;
                         }
                     }
+                    // return NULL;
                     if(back==2) {
                         imm--;
                         n-=trees[res[i]].mediaSize;
@@ -365,6 +368,7 @@ void* sortTable(void* id) {
                 imm++;
                 back = 0;
             }
+            // return NULL;
             if(i==lvl) {
                 break;
             }
@@ -373,7 +377,7 @@ void* sortTable(void* id) {
             pthread_rwlock_rdlock(&errorWM);
             if(errori[i]<error) {
                 pthread_rwlock_wrlock(&errorM);
-                error = errori[i];
+                // error = errori[i];
                 pthread_rwlock_unlock(&errorM);
                 pthread_rwlock_wrlock(&lonerM);
                 loner = loners[i];
@@ -398,54 +402,112 @@ void* sortTable(void* id) {
                     pthread_rwlock_unlock(&errorWM);
                 }
             }
+            // pthread_rwlock_unlock(&checkM);
+            // return NULL;
             if(back) {
                 pthread_rwlock_wrlock(&fileM);
                 pthread_rwlock_unlock(&checkM);
+                // printf("start\n");
                 sprintf(txt2, "%d %d ", errori[i], loners[i]);
+                // pthread_rwlock_unlock(&fileM);
+                // return NULL;
                 for(int j = 1; j<lenAggP; j++) {
-                    char temp[100]; // Adjust the size as per your needs
-                    sprintf(temp, "%s%d,", txt2, res[j]);
-                    strcpy(txt2, temp);
+                    sprintf(temp, "%d,", res[j]);
+                    strcat(txt2, temp);
                 }
                 file = fopen(filePATH, "w");
+                // pthread_rwlock_unlock(&fileM);
+                // return NULL;
                 if (file == NULL) {
                     printf("Failed to open the output file.\n");
+                    pthread_rwlock_unlock(&fileM);
                     return NULL;
                 }
                 int fileNo = fileno(file);
                 if (flock(fileNo, LOCK_EX) == -1) {
-                    printf("Failed to obtain lock");
+                    printf("Failed to obtain lock\n");
+                    pthread_rwlock_unlock(&fileM);
                     return NULL;
                 }
                 fprintf(file, "%s", txt2);
                 flock(fileNo, LOCK_UN);
                 fclose(file);
+                // printf("end\n");
                 pthread_rwlock_unlock(&fileM);
+                // return NULL;
             } else{
                 pthread_rwlock_unlock(&checkM);
             }
             back = 2;
         }
     }
+    return NULL;
 }
 
+bool waitsInput = true;
 
-void* userInterr() {
+void *userInterr() {
     printf("Press q to stop the sorting.\n");
-    while(1) {
-        if (getline(&filePATH, &len, stdin) == -1) {
-            printf("Error reading input");
-            return NULL;
-        }
-        if(strcmp(filePATH, "q\n") == 0) {
-            pthread_rwlock_wrlock(&errorM);
-            error = -1;
-            pthread_rwlock_unlock(&errorM);
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+
+    fd_set fds;
+    struct timeval timeout;
+
+    while (waitsInput) {
+        FD_ZERO(&fds);
+        FD_SET(fileno(stdin), &fds);
+
+        timeout.tv_sec = 5;  // Set timeout to 5 seconds
+        timeout.tv_usec = 0;
+
+        int ready = select(fileno(stdin) + 1, &fds, NULL, NULL, &timeout);
+
+        if (ready == -1) {
+            perror("select");
             break;
+        } else if (ready == 0) {
+            continue; // Continue waiting for input
+        } else {
+            read = getline(&line, &len, stdin);
+            if (read != -1) {
+                if(strcmp(line, "q\n") == 0) {
+                    pthread_rwlock_wrlock(&errorM);
+                    errorP = error;
+                    error = -1;
+                    pthread_rwlock_unlock(&errorM);
+                    break;
+                }
+            }
         }
     }
-    return (void*)1;
+
+    free(line); // Don't forget to free allocated memory
+    if(waitsInput) {
+        waitsInput = false;
+    }
+    pthread_exit(NULL);
 }
+// void* userInterr() {
+//     printf("Press q to stop the sorting.\n");
+//     char *input = NULL;
+//     while(1) {
+//         if (getline(&input, &len, stdin) == -1) {
+//             printf("Error reading input");
+//             return NULL;
+//         }
+//         if(strcmp(input, "q\n") == 0) {
+//             pthread_rwlock_wrlock(&errorM);
+//             error = -1;
+//             pthread_rwlock_unlock(&errorM);
+//             break;
+//         }
+//     }
+//     free(input);
+//     waitsInput = false;
+//     return NULL;
+// }
 
 int initSort(char *argv) {
 
@@ -455,6 +517,112 @@ int initSort(char *argv) {
     filePATH = malloc(strlen(argv) + 10);
     sprintf(filePATH, "data/%s.txt", argv);
     lenAgg = 0;
+
+
+
+    
+    char *file_contents;
+    long file_size;
+
+    // Open the file in binary read mode
+    file = fopen(filePATH, "rb");
+    if (file == NULL) {
+        perror("Error opening file");
+        return 1;
+    }
+    int filNo = fileno(file);
+    if (flock(filNo, LOCK_EX) == -1) {
+        printf("Failed to obtain lock");
+        return -1;
+    }
+
+    // Get the file size
+    fseek(file, 0, SEEK_END);
+    file_size = ftell(file);
+    rewind(file);
+
+    // Allocate memory to store the file contents
+    file_contents = malloc(file_size * sizeof(char));
+    if (file_contents == NULL) {
+        perror("Memory allocation failed");
+        fclose(file);
+        return 1;
+    }
+
+    // Read the file contents into the allocated memory
+    fread(file_contents, sizeof(char), file_size, file);
+    flock(filNo, LOCK_UN);
+    fclose(file);
+
+    // Ensure proper termination of the char* as a string
+    file_contents[file_size - 1] = '\0';
+    char* file_contents_orig = file_contents;
+    if(file_contents[0]=='"') {
+        file_contents++;
+    }
+    char* endChars = "\r\nresult.txt\r\nAffichage de result.txt\r\n";
+    if(strcmp(file_contents+strlen(file_contents)-strlen(endChars), endChars) == 0) {
+        file_contents[strlen(file_contents)-strlen(endChars)] = '\0';
+    }
+    
+
+
+    
+    char *file_backup;
+    sprintf(filePATH, "data/%s_backup.txt", argv);
+    // Open the file in binary read mode
+    file = fopen(filePATH, "rb");
+    if (file == NULL) {
+        perror("Error opening file");
+        return 1;
+    }
+    int filNo = fileno(file);
+    if (flock(filNo, LOCK_EX) == -1) {
+        printf("Failed to obtain lock");
+        return -1;
+    }
+
+    // Get the file size
+    fseek(file, 0, SEEK_END);
+    file_size = ftell(file);
+    rewind(file);
+
+    // Allocate memory to store the file contents
+    file_backup = malloc(file_size * sizeof(char));
+    if (file_backup == NULL) {
+        perror("Memory allocation failed");
+        fclose(file);
+        return 1;
+    }
+
+    // Read the file contents into the allocated memory
+    fread(file_backup, sizeof(char), file_size, file);
+    flock(filNo, LOCK_UN);
+    fclose(file);
+
+    // Ensure proper termination of the char* as a string
+    file_backup[file_size - 1] = '\0';
+    char* file_backup_orig = file_backup;
+    if(file_backup[0]=='"') {
+        file_backup++;
+    }
+    char* endChars = "Affichage de result.txt\r\n";
+    if(strcmp(file_backup+strlen(file_backup)-strlen(endChars), endChars) == 0) {
+        file_backup[strlen(file_backup)-strlen(endChars)] = '\0';
+    }
+    char* token = strtok(file_backup, "\n");
+    int errorPot = atoi(token);
+    token += strlen(token)+1;
+    if(strcmp(file_contents, token) == 0) {
+        error = errorPot;
+    }
+
+    // Clean up: Close the file and free allocated memory
+    free(file_backup_orig);
+
+
+
+
 
     file = fopen(filePATH, "r");
     if (file == NULL) {
@@ -469,60 +637,46 @@ int initSort(char *argv) {
     }
     
     
-    char* line = NULL;
     len = 0;
-    getline(&line, &len, file);
-    if(line[0]=='"') {
-        line++;
-    }
-    char* token = strtok(line, "\t");
+    token = strtok(file_contents, "\t");
     token = strtok(NULL, "\t");
     lenAgg = atoi(token);
     token = strtok(NULL, "\t");
     int lenVal = atoi(token);
     token = strtok(NULL, "\t");
     attNb = atoi(token);
-    token = strtok(NULL, "\t");
-    if(strcmp(token, "NaN")!=0) {
-        error = atoi(token);
-    }
-    token = strtok(NULL, "\t");
-    if(strcmp(token, "NaN")!=0) {
-        loner = atoi(token);
-    }
-    getline(&line, &len, file);
     int number[2] = {0,0};
     attributes = malloc(attNb * sizeof(attribute));
-    token = strtok(line, ",");
+    token = strtok(NULL, "\n");
     for(int i = 0; i<attNb; i++) {
+        token = strtok(NULL, ",");
         attributes[i].prevSize = atoi(token);
         if(attributes[i].prevSize>0) {
-            number[1]+=attributes[i].prevSize;
+            number[0]+=attributes[i].prevSize;
         } else {
-            number[2]++;
+            number[1]++;
         }
-        token = strtok(NULL, ",");
     }
+    token = strtok(NULL, "\n");
     int count;
     trees0 = malloc(lenAgg * sizeof(treeCons));
     int** precRef = malloc(lenAgg * sizeof(int*));
     int mediaNb = 0;
     for(int i = 0; i<lenAgg; i++) {
-        getline(&line, &len, file);
-        getline(&line, &len, file);
-        token = strtok(line, ",");
-        trees0[i].afters = atoi(token);
+        token = strtok(NULL, "\n");
         token = strtok(NULL, ",");
+        trees0[i].afters = atoi(token);
+        token = strtok(NULL, "\r");
         trees0[i].mediaSize = atoi(token);
         mediaNb += trees0[i].mediaSize;
 
-        getline(&line, &len, file);
         count = 0;
         precRef[i] = malloc(lenAgg * sizeof(int));
-        token = strtok(line, ",");
+        token = strtok(NULL, ",");
+        token++;
         while(token!=NULL && token[0] != '\r') {
-            precRef[i][count] = atoi(token);
             token = strtok(NULL, ",");
+            precRef[i][count] = atoi(token);
             count++;
         }
         trees0[i].befSize = count;
@@ -532,19 +686,10 @@ int initSort(char *argv) {
         count = 0;
         token = strtok(line, ",");
         while(token!=NULL && token[0] != '\r') {
-            if(i == 85) {
-                printf("%s %d\n", token, atoi(token));
-            }
             trees0[i].attrP[count].attr = atoi(token);
             token = strtok(NULL, ",");
-            if(i == 85) {
-                printf("%s %d\n", token, atoi(token));
-            }
             trees0[i].attrP[count].posInt = atoi(token);
             token = strtok(NULL, "\t");
-            if(i == 85) {
-                printf("%s %d\n", token, atoi(token));
-            }
             trees0[i].attrP[count].posOut = atoi(token);
             token = strtok(NULL, ",");
             count++;
@@ -552,11 +697,9 @@ int initSort(char *argv) {
         trees0[i].attrPSize = count;
         trees0[i].attrP = realloc(trees0[i].attrP, count * sizeof(attrProp));
     }
-    free(line);
+    free(file_contents_orig);
     flock(filNo, LOCK_UN);
     fclose(file);
-    printf(":%d %d %d \n",trees0[85].attrP[0].attr,trees0[85].attrP[0].posInt,trees0[85].attrP[0].posOut);
-    printf("afters:%d\n",trees0[0].afters);
     for(int i = 0; i<lenAgg; i++) {
         trees0[i].before = malloc(trees0[i].befSize * sizeof(treeCons*));
         for(int j = 0; j<trees0[i].befSize; j++) {
@@ -579,7 +722,7 @@ int initSort(char *argv) {
         }
     }
     int numCores = sysconf(_SC_NPROCESSORS_ONLN);
-    numCores = 1;
+    numCores = 2;
     threads = malloc((numCores+1) * sizeof(pthread_t));
     lvl = 0;
 
@@ -616,8 +759,10 @@ int initSort(char *argv) {
     attribute* attrP;
     attribute* attributesI = malloc(attNb * sizeof(attribute));
     for(int j = 0; j<attNb; j++) {
-        attributesI[j] = attributes[j];
-        attributesI[j].prevSt = malloc(attributesI[j].prevSize * sizeof(prevStT));
+        attributesI[j].last = attributes[j].last;
+        attributesI[j].dist = attributes[j].dist;
+        attributesI[j].rest = attributes[j].rest;
+        attributesI[j].prevSt = malloc(attributes[j].prevSize * sizeof(prevStT));
         attributesI[j].prevSize = 0;
     }
     int i = 1;  // ith node to place
@@ -760,17 +905,18 @@ int initSort(char *argv) {
     int length = 1;  // Length of the current digit range (starting from 1 digit)
     int multiplier = 9;  // Multiplier for the number of digits in the current range
     n = lenAgg;
+    int tempSize = 0;
     if(n==0) {
         txtSize = 1;
     } else {
         while (n > 0) {
             // Calculate the number of digits contributed by the current digit range
-            txtSize += (n < multiplier) ? n * length : multiplier * length;
+            tempSize += (n < multiplier) ? n * length : multiplier * length;
             n -= multiplier;
             length++;
             multiplier *= 10;  // Increase the multiplier for the next digit range
         }
-        txtSize*=2;
+        txtSize = 2*tempSize;
     }
     for(int i = 0; i<2; i++) {
         length = 0;
@@ -786,17 +932,17 @@ int initSort(char *argv) {
         }
         txtSize += length*2+1;
     }
-    txt2 = malloc(txtSize);
-    
+    temp = malloc(tempSize+2);
+    txt2 = malloc(txtSize+1);
+    // error = -1;
     for(int i = 0; i<numCores; i++) {
-        intptr_t arg = (intptr_t)i;
-        if(pthread_create(&threads[i], NULL, sortTable, (void*)arg)!=0) {
+        if(pthread_create(&threads[i], NULL, sortTable, NULL)!=0) {
             printf("Error creating thread %d.\n",i);
             return -1;
         }
     }
     if(pthread_create(&threads[numCores], NULL, userInterr, NULL)!=0) {
-        printf("Error creating thread for user input.\n");
+        printf("Error creating thread %d.\n",i);
         return -1;
     }
     for(int i = 0; i<numCores; i++) {
@@ -805,14 +951,42 @@ int initSort(char *argv) {
             return -1;
         }
     }
+    waitsInput = false;
+    if (pthread_join(threads[i], NULL) != 0) {
+        printf("pthread_join");
+        return -1;
+    }
+    file = fopen(filePATH, "w");
+    if (file == NULL) {
+        printf("Failed to open the output file.\n");
+        return NULL;
+    }
+    int fileNo = fileno(file);
+    if (flock(fileNo, LOCK_EX) == -1) {
+        printf("Failed to obtain lock\n");
+        return NULL;
+    }
+    fprintf(file, "%d\n%s", errorP, txt2);
+    flock(fileNo, LOCK_UN);
+    fclose(file);
+
+
     free(threads);
     free(filePATH);
     free(txt2);
+    
+    free(attributes);
+    for(int j = 0; j<lenAgg; j++) {
+        free(trees0[j].attrP);
+        free(trees0[j].before);
+    }
+    free(trees0);
     return 1;
 }
 
 
 
-int main() {
-    initSort("dance_Feuille_1");
-}
+// int main() {
+//     initSort("dance_Feuille_1");
+//     return 1;
+// }
