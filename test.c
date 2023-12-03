@@ -3,11 +3,18 @@
 #include <string.h>
 
 int main() {
-    char line[] = "hey delim hey delim hey";
-    char* token = strtok(line, "de");
-    printf("%s\n", token);
-    token += strlen(token)+1;
-    printf("%s\n", token);
+    char input[] = "1,2,3\n4,5,6,7\n8,9"; // Your input string
+
+    char* tokenSup = strtok(input, "\n");
+    char* line = malloc(100);
+    strcpy(line,tokenSup);
+    char* token = strtok(line, ",");
+    token = strtok(NULL, ",");
+    token = strtok(NULL, ",");
+    token = strtok(NULL, ",");
+    token = strtok(NULL, ",");
+    tokenSup = strtok(input, "\n");
+    token = strtok(line, ",");
 
     return 0;
 }

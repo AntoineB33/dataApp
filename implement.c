@@ -576,7 +576,7 @@ int initSort(char *argv) {
         perror("Error opening file");
         return 1;
     }
-    int filNo = fileno(file);
+    filNo = fileno(file);
     if (flock(filNo, LOCK_EX) == -1) {
         printf("Failed to obtain lock");
         return -1;
@@ -606,15 +606,16 @@ int initSort(char *argv) {
     if(file_backup[0]=='"') {
         file_backup++;
     }
-    char* endChars = "Affichage de result.txt\r\n";
     if(strcmp(file_backup+strlen(file_backup)-strlen(endChars), endChars) == 0) {
         file_backup[strlen(file_backup)-strlen(endChars)] = '\0';
     }
     char* token = strtok(file_backup, "\n");
-    int errorPot = atoi(token);
-    token += strlen(token)+1;
-    if(strcmp(file_contents, token) == 0) {
-        error = errorPot;
+    if(token!=NULL) {
+        int errorPot = atoi(token);
+        token += strlen(token)+1;
+        if(strcmp(file_contents, token) == 0) {
+            error = errorPot;
+        }
     }
 
     // Clean up: Close the file and free allocated memory
@@ -630,7 +631,7 @@ int initSort(char *argv) {
         printf("Failed to open the file %s\n",filePATH);
         return -1;
     }
-    int filNo = fileno(file);
+    filNo = fileno(file);
     if (flock(filNo, LOCK_EX) == -1) {
         printf("Failed to obtain lock");
         return -1;
@@ -645,47 +646,52 @@ int initSort(char *argv) {
     int lenVal = atoi(token);
     token = strtok(NULL, "\t");
     attNb = atoi(token);
+    token = strtok(NULL, "\r");
     int number[2] = {0,0};
     attributes = malloc(attNb * sizeof(attribute));
-    token = strtok(NULL, "\n");
+    int matrixSize = lenAgg*4+lenVal+2;
+    char** matrix = malloc(matrixSize * sizeof(char*));
+    for(int i = 0; i<matrixSize; i++) {
+        token = strtok(NULL,"\r");
+        token++;
+        matrix[i] = malloc(strlen(token)+1);
+        strcpy(matrix[i], token);
+        // printf("%s\n", matrix[i]);
+    }
+    token = strtok(matrix[0], ",");
     for(int i = 0; i<attNb; i++) {
-        token = strtok(NULL, ",");
         attributes[i].prevSize = atoi(token);
         if(attributes[i].prevSize>0) {
             number[0]+=attributes[i].prevSize;
         } else {
             number[1]++;
         }
+        token = strtok(NULL, ",");
     }
-    token = strtok(NULL, "\n");
     int count;
     trees0 = malloc(lenAgg * sizeof(treeCons));
     int** precRef = malloc(lenAgg * sizeof(int*));
     int mediaNb = 0;
     for(int i = 0; i<lenAgg; i++) {
-        token = strtok(NULL, "\n");
-        token = strtok(NULL, ",");
+        token = strtok(matrix[i*4+2], ",");
         trees0[i].afters = atoi(token);
-        token = strtok(NULL, "\r");
+        token = strtok(NULL, "");
         trees0[i].mediaSize = atoi(token);
         mediaNb += trees0[i].mediaSize;
-
         count = 0;
         precRef[i] = malloc(lenAgg * sizeof(int));
-        token = strtok(NULL, ",");
-        token++;
-        while(token!=NULL && token[0] != '\r') {
-            token = strtok(NULL, ",");
+        token = strtok(matrix[i*4+3], ",");
+        while(token!=NULL) {
             precRef[i][count] = atoi(token);
             count++;
+            token = strtok(NULL, ",");
         }
         trees0[i].befSize = count;
 
-        getline(&line, &len, file);
         trees0[i].attrP = malloc(attNb * sizeof(attrProp));
         count = 0;
-        token = strtok(line, ",");
-        while(token!=NULL && token[0] != '\r') {
+        token = strtok(matrix[i*4+4], ",");
+        while(token!=NULL) {
             trees0[i].attrP[count].attr = atoi(token);
             token = strtok(NULL, ",");
             trees0[i].attrP[count].posInt = atoi(token);
@@ -959,12 +965,12 @@ int initSort(char *argv) {
     file = fopen(filePATH, "w");
     if (file == NULL) {
         printf("Failed to open the output file.\n");
-        return NULL;
+        return -1;
     }
     int fileNo = fileno(file);
     if (flock(fileNo, LOCK_EX) == -1) {
         printf("Failed to obtain lock\n");
-        return NULL;
+        return -1;
     }
     fprintf(file, "%d\n%s", errorP, txt2);
     flock(fileNo, LOCK_UN);
