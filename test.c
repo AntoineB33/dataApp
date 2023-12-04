@@ -3,18 +3,13 @@
 #include <string.h>
 
 int main() {
-    char input[] = "1,2,3\n4,5,6,7\n8,9"; // Your input string
-
-    char* tokenSup = strtok(input, "\n");
-    char* line = malloc(100);
-    strcpy(line,tokenSup);
-    char* token = strtok(line, ",");
-    token = strtok(NULL, ",");
-    token = strtok(NULL, ",");
-    token = strtok(NULL, ",");
-    token = strtok(NULL, ",");
-    tokenSup = strtok(input, "\n");
-    token = strtok(line, ",");
+    char *suite = malloc(10000);
+    char* temp = malloc(100);
+    for(int i = 0; i < 167; i++) {
+        sprintf(temp, "%d,", i);
+        strcat(suite,temp);
+    }
+    printf("%s\n%d\n", suite, strlen(suite));
 
     return 0;
 }

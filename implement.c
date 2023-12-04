@@ -29,7 +29,7 @@ char* askFile(char* path0) {
     if ((dir = opendir (path)) != NULL) {
         while ((ent = readdir (dir)) != NULL) {
             if (ent->d_type == DT_REG) {
-                if (strstr(ent->d_name, ".txt") != NULL && strstr(ent->d_name, "_sorted.txt") == NULL) {
+                if (strstr(ent->d_name, ".txt") != NULL && strstr(ent->d_name, "_sorted.txt") == NULL && strstr(ent->d_name, "_backup.txt") == NULL) {
                     files = realloc(files, (count+1) * sizeof(char*));
                     files[count] = strdup(ent->d_name);
                     printf("%d: %s\n", count+1, strndup(files[count], strlen(files[count])-4));
@@ -77,6 +77,7 @@ int error;
 int space;
 int loner;
 int errorP;
+int lonerP;
 int lvl;
 pthread_rwlock_t newRoot = PTHREAD_RWLOCK_INITIALIZER;
 pthread_rwlock_t checkM = PTHREAD_RWLOCK_INITIALIZER;
@@ -377,7 +378,7 @@ void* sortTable() {
             pthread_rwlock_rdlock(&errorWM);
             if(errori[i]<error) {
                 pthread_rwlock_wrlock(&errorM);
-                // error = errori[i];
+                error = errori[i];
                 pthread_rwlock_unlock(&errorM);
                 pthread_rwlock_wrlock(&lonerM);
                 loner = loners[i];
@@ -402,22 +403,15 @@ void* sortTable() {
                     pthread_rwlock_unlock(&errorWM);
                 }
             }
-            // pthread_rwlock_unlock(&checkM);
-            // return NULL;
             if(back) {
                 pthread_rwlock_wrlock(&fileM);
                 pthread_rwlock_unlock(&checkM);
-                // printf("start\n");
-                sprintf(txt2, "%d %d ", errori[i], loners[i]);
-                // pthread_rwlock_unlock(&fileM);
-                // return NULL;
+                txt2[0] = '\0';
                 for(int j = 1; j<lenAggP; j++) {
                     sprintf(temp, "%d,", res[j]);
                     strcat(txt2, temp);
                 }
                 file = fopen(filePATH, "w");
-                // pthread_rwlock_unlock(&fileM);
-                // return NULL;
                 if (file == NULL) {
                     printf("Failed to open the output file.\n");
                     pthread_rwlock_unlock(&fileM);
@@ -432,9 +426,7 @@ void* sortTable() {
                 fprintf(file, "%s", txt2);
                 flock(fileNo, LOCK_UN);
                 fclose(file);
-                // printf("end\n");
                 pthread_rwlock_unlock(&fileM);
-                // return NULL;
             } else{
                 pthread_rwlock_unlock(&checkM);
             }
@@ -477,6 +469,9 @@ void *userInterr() {
                     errorP = error;
                     error = -1;
                     pthread_rwlock_unlock(&errorM);
+                    pthread_rwlock_wrlock(&lonerM);
+                    lonerP = loner;
+                    pthread_rwlock_unlock(&lonerM);
                     break;
                 }
             }
@@ -542,7 +537,7 @@ int initSort(char *argv) {
     rewind(file);
 
     // Allocate memory to store the file contents
-    file_contents = malloc(file_size * sizeof(char));
+    file_contents = malloc(file_size);
     if (file_contents == NULL) {
         perror("Memory allocation failed");
         fclose(file);
@@ -556,22 +551,25 @@ int initSort(char *argv) {
 
     // Ensure proper termination of the char* as a string
     file_contents[file_size - 1] = '\0';
+    char* file_contents_copy = strdup(file_contents);
     char* file_contents_orig = file_contents;
     if(file_contents[0]=='"') {
         file_contents++;
     }
     char* endChars = "\r\nresult.txt\r\nAffichage de result.txt\r\n";
-    if(strcmp(file_contents+strlen(file_contents)-strlen(endChars), endChars) == 0) {
+    if(strlen(file_contents)>=strlen(endChars) && strcmp(file_contents+strlen(file_contents)-strlen(endChars), endChars) == 0) {
         file_contents[strlen(file_contents)-strlen(endChars)] = '\0';
     }
-    
+
+
 
 
     
     char *file_backup;
-    sprintf(filePATH, "data/%s_backup.txt", argv);
+    char* backupPath = malloc(strlen(argv) + 20);
+    sprintf(backupPath, "data/%s_backup.txt", argv);
     // Open the file in binary read mode
-    file = fopen(filePATH, "rb");
+    file = fopen(backupPath, "rb");
     if (file == NULL) {
         perror("Error opening file");
         return 1;
@@ -588,7 +586,7 @@ int initSort(char *argv) {
     rewind(file);
 
     // Allocate memory to store the file contents
-    file_backup = malloc(file_size * sizeof(char));
+    file_backup = malloc(file_size);
     if (file_backup == NULL) {
         perror("Memory allocation failed");
         fclose(file);
@@ -597,29 +595,34 @@ int initSort(char *argv) {
 
     // Read the file contents into the allocated memory
     fread(file_backup, sizeof(char), file_size, file);
+    char* file_backup_orig = file_backup;
     flock(filNo, LOCK_UN);
     fclose(file);
 
     // Ensure proper termination of the char* as a string
     file_backup[file_size - 1] = '\0';
-    char* file_backup_orig = file_backup;
-    if(file_backup[0]=='"') {
-        file_backup++;
-    }
-    if(strcmp(file_backup+strlen(file_backup)-strlen(endChars), endChars) == 0) {
-        file_backup[strlen(file_backup)-strlen(endChars)] = '\0';
-    }
-    char* token = strtok(file_backup, "\n");
+    char* token = strtok(file_backup, "\t");
     if(token!=NULL) {
         int errorPot = atoi(token);
-        token += strlen(token)+1;
+        token = strtok(NULL, "\n");
+        int lonerPot = atoi(token);
+        token = strtok(NULL, "");
+        if(token[0]=='"') {
+            token++;
+        }
+        if(strlen(token)>=strlen(endChars) && strcmp(token+strlen(token)-strlen(endChars), endChars) == 0) {
+            token[strlen(token)-strlen(endChars)] = '\0';
+        }
         if(strcmp(file_contents, token) == 0) {
             error = errorPot;
+            loner = lonerPot;
         }
     }
 
     // Clean up: Close the file and free allocated memory
     free(file_backup_orig);
+    
+
 
 
 
@@ -647,7 +650,8 @@ int initSort(char *argv) {
     token = strtok(NULL, "\t");
     attNb = atoi(token);
     token = strtok(NULL, "\r");
-    int number[2] = {0,0};
+
+
     attributes = malloc(attNb * sizeof(attribute));
     int matrixSize = lenAgg*4+lenVal+2;
     char** matrix = malloc(matrixSize * sizeof(char*));
@@ -661,13 +665,19 @@ int initSort(char *argv) {
     token = strtok(matrix[0], ",");
     for(int i = 0; i<attNb; i++) {
         attributes[i].prevSize = atoi(token);
-        if(attributes[i].prevSize>0) {
-            number[0]+=attributes[i].prevSize;
-        } else {
-            number[1]++;
-        }
         token = strtok(NULL, ",");
     }
+
+
+
+
+
+
+
+
+
+
+
     int count;
     trees0 = malloc(lenAgg * sizeof(treeCons));
     int** precRef = malloc(lenAgg * sizeof(int*));
@@ -703,6 +713,10 @@ int initSort(char *argv) {
         trees0[i].attrPSize = count;
         trees0[i].attrP = realloc(trees0[i].attrP, count * sizeof(attrProp));
     }
+    for(int i = 0; i<matrixSize; i++) {
+        free(matrix[i]);
+    }
+    free(matrix);
     free(file_contents_orig);
     flock(filNo, LOCK_UN);
     fclose(file);
@@ -728,12 +742,9 @@ int initSort(char *argv) {
         }
     }
     int numCores = sysconf(_SC_NPROCESSORS_ONLN);
-    numCores = 2;
+    numCores = 1;
     threads = malloc((numCores+1) * sizeof(pthread_t));
     lvl = 0;
-
-    filePATH = realloc(filePATH, strlen(filePATH) + 20);
-    sprintf(filePATH, "data/%s_sorted.txt", argv);
 
 
     
@@ -907,40 +918,29 @@ int initSort(char *argv) {
     lastThRoot = -1;
     printf("lvl:%d\n", lvl);
 
-    int txtSize = 0;
-    int length = 1;  // Length of the current digit range (starting from 1 digit)
+    int txtSize = 1;
+    int length = 2;  // Length of the current digit range (starting from 1 digit)
     int multiplier = 9;  // Multiplier for the number of digits in the current range
     n = lenAgg;
-    int tempSize = 0;
-    if(n==0) {
-        txtSize = 1;
-    } else {
-        while (n > 0) {
-            // Calculate the number of digits contributed by the current digit range
-            tempSize += (n < multiplier) ? n * length : multiplier * length;
-            n -= multiplier;
-            length++;
-            multiplier *= 10;  // Increase the multiplier for the next digit range
-        }
-        txtSize = 2*tempSize;
+    while (n > 0) {
+        // Calculate the number of digits contributed by the current digit range
+        txtSize += (n < multiplier) ? n * length : multiplier * length;
+        n -= multiplier;
+        length++;
+        multiplier *= 10;  // Increase the multiplier for the next digit range
     }
-    for(int i = 0; i<2; i++) {
-        length = 0;
-        number[i] *= lenVal;
-        // If the number is zero, it has one digit
-        if (number[i] == 0) {
-            length++;
-        } else {
-            while (number[i] != 0) {
-                length++;
-                number[i] /= 10;
-            }
-        }
-        txtSize += length*2+1;
+    txt2 = malloc(txtSize);
+    txt2[0] = '\0';
+    n = lenAgg;
+    length = 0;
+    while (n != 0) {
+        length++;
+        n /= 10;
     }
-    temp = malloc(tempSize+2);
-    txt2 = malloc(txtSize+1);
+    temp = malloc(length+2);
     // error = -1;
+    filePATH = realloc(filePATH, strlen(filePATH) + 10);
+    sprintf(filePATH, "data/%s_sorted.txt", argv);
     for(int i = 0; i<numCores; i++) {
         if(pthread_create(&threads[i], NULL, sortTable, NULL)!=0) {
             printf("Error creating thread %d.\n",i);
@@ -958,11 +958,11 @@ int initSort(char *argv) {
         }
     }
     waitsInput = false;
-    if (pthread_join(threads[i], NULL) != 0) {
+    if (pthread_join(threads[numCores], NULL) != 0) {
         printf("pthread_join");
         return -1;
     }
-    file = fopen(filePATH, "w");
+    file = fopen(backupPath, "w");
     if (file == NULL) {
         printf("Failed to open the output file.\n");
         return -1;
@@ -972,9 +972,11 @@ int initSort(char *argv) {
         printf("Failed to obtain lock\n");
         return -1;
     }
-    fprintf(file, "%d\n%s", errorP, txt2);
+    fprintf(file, "%d\t%d\n%s", errorP, lonerP, file_contents_copy);
     flock(fileNo, LOCK_UN);
     fclose(file);
+    free(file_contents_copy);
+    free(backupPath);
 
 
     free(threads);
@@ -987,6 +989,7 @@ int initSort(char *argv) {
         free(trees0[j].before);
     }
     free(trees0);
+    free(temp);
     return 1;
 }
 
