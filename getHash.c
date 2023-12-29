@@ -60,21 +60,20 @@ char *sha256(const char *str) {
 }
 
 int main() {
-    char* command;
-    char* firstLine;
     char* url;
-    DIR *dir;
 
     size_t size = 0;
     FILE *clipboard = popen("powershell.exe Get-Clipboard", "r");
     if (clipboard == NULL) {
         pclose(clipboard);
         printf("Failed to open clipboard.\n");
+        getline(&url, &size, stdin);
         return -1;
     }
     if (getline(&url, &size, clipboard) == -1) {
         pclose(clipboard);
         printf("Error reading clipboard.\n");
+        getline(&url, &size, stdin);
         return -1;
     }
     pclose(clipboard);
@@ -91,9 +90,9 @@ int main() {
     clipboard = popen("clip.exe", "w");
     if (clipboard == NULL) {
         printf("Error opening clipboard");
+        getline(&url, &size, stdin);
         return -1;
     }
-    // return 1;
     fprintf(clipboard, "%s", hash);
     pclose(clipboard);
 }

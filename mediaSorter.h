@@ -44,6 +44,5 @@ typedef struct {
 // Function prototypes
 void* sortTable();
 int initSort(char *argv);
-char* askFile(char* path);
 
 #endif

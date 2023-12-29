@@ -129,15 +129,8 @@ int main() {
     }
     flock(fileNo, LOCK_UN);
     fclose(file);
-    token = strtok(line, " ");
-    char* error = malloc(strlen(token)+1);
-    strcpy(error, token);
-    token = strtok(NULL, " ");
-    char* loner = malloc(strlen(token)+1);
-    strcpy(loner, token);
-    token = strtok(NULL, ",");
+    token = strtok(line, ",");
     count = 0;
-    txtSize += strlen(error) + strlen(loner) + 2;
     txt = realloc(txt, txtSize);
     while(token!=NULL && token[0] != '\r') {
         int i = atoi(token);
@@ -153,28 +146,12 @@ int main() {
         printf("Not sorted yet.");
         return -1;
     }
-    token = strtok(txt, "\r\n");
-    char* newTxt = malloc(txtSize+strlen(error)+strlen(loner)+10);
-    strcpy(newTxt, token);
-    strcat(newTxt, "\r\n");
-    token = strtok(NULL, "\r\n");
-    strcat(newTxt, token);
-    strcat(newTxt, "\t\t");
-    strcat(newTxt, error);
-    strcat(newTxt, "\r\n");
-    token = strtok(NULL, "\r\n");
-    strcat(newTxt, token);
-    strcat(newTxt, "\t\t");
-    strcat(newTxt, loner);
-    token = strtok(NULL, "\0");
-    strcat(newTxt, "\r\n");
-    strcat(newTxt, token);
     FILE *clipboard = popen("clip.exe", "w");
     if (clipboard == NULL) {
         printf("Error opening clipboard");
         return -1;
     }
     // return 1;
-    fprintf(clipboard, "%s", newTxt);
+    fprintf(clipboard, "%s", txt);
     pclose(clipboard);
 }
